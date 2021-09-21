@@ -8,3 +8,6 @@ def circle_circumference(radius):
 
 print(circle_circumference(5)) 
 
+def five_times_table(num):
+    for x in range(num):
+        print("five times", x, "is", 5 * x)

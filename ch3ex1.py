@@ -3,12 +3,15 @@
 
 import turtle
 
-def turtle_square(turtle, coordinates):
+def turtle_square(turtle, x, y):
     forward = 200
-    position = tess.forward(coordinates)
+    turtle.penup()
+    turtle.left(180)
+    turtle.goto(x, y)
+    turtle.pendown()
     for _ in range(22):
-        tess.forward(forward)
-        tess.left(90)
+        turtle.forward(forward)
+        turtle.left(90)
         forward -= 10
 
 
@@ -18,8 +21,9 @@ tess = turtle.Turtle()
 tess.shape("turtle")
 tess.color("blue")
 
-tess.left(180)
+colors = ["blue", "peach puff", "pink", "gold", "maroon"]
 
-turtle_square(tess, 200)
+
+turtle_square(tess, 100, 200)
 
 window.mainloop()

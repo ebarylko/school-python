@@ -2,11 +2,11 @@
 #Eitan
 
 def cost_of_pizza(size):
-    labour_c = 4.5
-    rent_c = 1
-    materials_c = 0.75 * size ** 2
-    final_cost = labour_c + rent_c + materials_c
-    return final_cost
+    ilabour_cost = 4.5
+    irent_cost = 1
+    imaterials_cost = 0.05 * size ** 2
+    ifinal_cost = ilabour_cost + irent_cost + imaterials_cost
+    return ifinal_cost
 
 size = int(input("What size pizza do you want?: "))
 
