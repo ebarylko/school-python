@@ -10,7 +10,8 @@ error_troubleshoot = {
 
 
 def error_message(error):
-    #pre: ta
+    #pre: takes an error message
+    #post: returns the troubleshoot message
     return error_troubleshoot.get(error) or "Error not found"
 
 
