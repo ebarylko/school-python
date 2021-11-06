@@ -5,13 +5,6 @@
 import sys, pygame
 pygame.init()
 
-size = width, height = 320, 240
-speed = [2, 2]
-black = 0, 0, 0
-
-screen = pygame.display.set_mode(size)
-
-board = [['  ' for i in range(8)] for i in range(8)]
 
 WIDTH = 800
 
@@ -33,31 +26,75 @@ TILE_SIZE = WIDTH // 8
 bp = pygame.image.load("pieces/black_pawn.png")
 bpr = pygame.transform.scale(bp, (TILE_SIZE, TILE_SIZE))
 
-def draw_grid(win, rows, width):
-    gap = width // 8
-    for i in range(rows):
-        pygame.draw.line(win, BLACK, (0, i * gap), (width, i * gap))
-        for j in range(rows):
-            pygame.draw.line(win, BLACK, (j * gap, 0), (j * gap, width))
+class Board:
+
+    def __init__(self, win):
+        self.pieces = {}
+        win.fill(WHITE)
+        self.draw_grid(win, 8, 800)
+
+    def draw_grid(self, win, rows, width):
+        gap = TILE_SIZE
+        for i in range(rows):
+            pygame.draw.line(win, BLACK, (0, i * gap), (width, i * gap))
+            for j in range(rows):
+                pygame.draw.line(win, BLACK, (j * gap, 0), (j * gap, width))
 
 
-# board.init(WIN)
-# Draws the board and the pieces
-screen.fill(WHITE)
-draw_grid(WIN, 8, 800)
+class Tile:
+    def __init__(self, pos):
+        self.x, self.y = pos
+
+    def highlight(self, win):
+        pygame.draw.rect(
+            win,
+            YELLOW,
+            pygame.Rect(self.x * TILE_SIZE + 1, self.y * TILE_SIZE + 1, TILE_SIZE - 1, TILE_SIZE - 1)
+        )
+
+    def unhighlight(self, win):
+        pygame.draw.rect(
+            win,
+            WHITE,
+            pygame.Rect(self.x * TILE_SIZE + 1, self.y * TILE_SIZE + 1, TILE_SIZE - 1, TILE_SIZE - 1)
+        )
+
+
+class Move:
+
+    def __init__(self, board):
+        self.board = board
+        self.clear()
+
+
+    def clear(self):
+        self.source = None
+        self.target = None
+
+    def select(self, pos):
+        self.source = pos
+
+    def is_selected(self, pos):
+        return self.source == pos
+
 
 def pos_to_tile(pos):
     x, y = pos
     return x // TILE_SIZE, y // TILE_SIZE
 
 
-def highlight_tile(pos, win, board):
-    print(pos)
-    x, y = pos_to_tile(pos)
-    print(x, y)
-    pygame.draw.rect(win, YELLOW, pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
-    # Paint that tile yellow
-    return board
+def highlight_tile(pos, win, move):
+    bpos = pos_to_tile(pos)
+    tile = Tile(bpos)
+    if move.is_selected(bpos):
+        tile.unhighlight(win)
+        move.clear()
+    else:
+        tile.highlight(win)
+        move.select(bpos)
+
+    return move
+
 
 def event_response(event):
 
@@ -66,10 +103,16 @@ def event_response(event):
     # And deselect the previous
     if event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
-        return lambda win, board: highlight_tile(pos, win, board) 
+        return lambda win, move: highlight_tile(pos, win, move)
 
-    return lambda win, board: board
+    return lambda win, move: move
 
+
+# Draws the board and the pieces
+board = Board(WIN)
+
+# Move to use for events
+move = Move(board)
 
 while 1:
     pygame.time.delay(50)
@@ -86,7 +129,7 @@ while 1:
         # Clicking on a tile when there's one selected attemps to move the piece to the target tile
         event_action = event_response(event)
 
-        board = event_action(WIN, board)
+        move = event_action(WIN, move)
 
     WIN.blit(bpr, (10, 10))
     pygame.display.flip()
