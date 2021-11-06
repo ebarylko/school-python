@@ -16,6 +16,7 @@ WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Chess")
 
 WHITE = (255, 255, 255)
+RED = (255, 0, 0)
 GREY = (128, 128, 128)
 YELLOW = (204, 204, 0)
 BLUE = (50, 255, 255)
@@ -23,15 +24,26 @@ BLACK = (0, 0, 0)
 
 TILE_SIZE = WIDTH // 8
 
-bp = pygame.image.load("pieces/black_pawn.png")
-bpr = pygame.transform.scale(bp, (TILE_SIZE, TILE_SIZE))
-
 class Board:
+    MARGIN = 5
 
     def __init__(self, win):
         self.pieces = {}
         win.fill(WHITE)
         self.draw_grid(win, 8, 800)
+        bp = pygame.image.load("pieces/black_pawn.png")
+        bpr = pygame.transform.scale(bp, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
+        self.pieces[(0, 0)] = bpr
+        self.draw_piece(win, (0, 0), bpr)
+
+    def draw_piece(self, win, pos, piece):
+        x, y = pos_to_tile(pos)
+        win.blit(piece, (x + self.MARGIN, y + self.MARGIN))
+
+
+    def is_empty(self, pos):
+        return not self.pieces.get(pos)
+
 
     def draw_grid(self, win, rows, width):
         gap = TILE_SIZE
@@ -45,36 +57,41 @@ class Tile:
     def __init__(self, pos):
         self.x, self.y = pos
 
-    def highlight(self, win):
+    def invalid(self, win):
+        self.highlight(win, RED)
+
+    def highlight(self, win, color = YELLOW):
         pygame.draw.rect(
             win,
-            YELLOW,
+            color,
             pygame.Rect(self.x * TILE_SIZE + 1, self.y * TILE_SIZE + 1, TILE_SIZE - 1, TILE_SIZE - 1)
         )
 
-    def unhighlight(self, win):
-        pygame.draw.rect(
-            win,
-            WHITE,
-            pygame.Rect(self.x * TILE_SIZE + 1, self.y * TILE_SIZE + 1, TILE_SIZE - 1, TILE_SIZE - 1)
-        )
+    def clear(self, win):
+        self.highlight(win, WHITE)
 
 
 class Move:
-
     def __init__(self, board):
         self.board = board
         self.clear()
 
+    def is_invalid(self, pos):
+        """
+        The move is invalid if hasn't started and the tile is empty or
+        has started and the target is a piece of the same color or
+        has started and the source cannot move in that pattern
+        """
+        not self.source and self.board.is_empty(pos)
 
     def clear(self):
         self.source = None
         self.target = None
 
-    def select(self, pos):
+    def start(self, pos):
         self.source = pos
 
-    def is_selected(self, pos):
+    def has_started_on(self, pos):
         return self.source == pos
 
 
@@ -86,12 +103,19 @@ def pos_to_tile(pos):
 def highlight_tile(pos, win, move):
     bpos = pos_to_tile(pos)
     tile = Tile(bpos)
-    if move.is_selected(bpos):
-        tile.unhighlight(win)
+
+    # There's no piece in that position -> show is an error
+    # The move already started on that position -> should be cleared/reset
+    # The move hasn't started -> make it start on that position
+    # The move has started and target is a different position -> unhighlight and move the piece
+    if move.is_invalid(bpos):
+        tile.invalid(win)
+    elif move.has_started_on(bpos):
+        tile.clear(win)
         move.clear()
     else:
         tile.highlight(win)
-        move.select(bpos)
+        move.start(bpos)
 
     return move
 
@@ -131,6 +155,5 @@ while 1:
 
         move = event_action(WIN, move)
 
-    WIN.blit(bpr, (10, 10))
     pygame.display.flip()
 
