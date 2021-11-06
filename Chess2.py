@@ -41,12 +41,53 @@ def draw_grid(win, rows, width):
             pygame.draw.line(win, BLACK, (j * gap, 0), (j * gap, width))
 
 
+# board.init(WIN)
+# Draws the board and the pieces
+screen.fill(WHITE)
+draw_grid(WIN, 8, 800)
+
+def pos_to_tile(pos):
+    x, y = pos
+    return x // TILE_SIZE, y // TILE_SIZE
+
+
+def highlight_tile(pos, win, board):
+    print(pos)
+    x, y = pos_to_tile(pos)
+    print(x, y)
+    pygame.draw.rect(win, YELLOW, pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+    # Paint that tile yellow
+    return board
+
+def event_response(event):
+
+    # Either we need to select a tile
+    # Or move a piece to the tiile
+    # And deselect the previous
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        pos = pygame.mouse.get_pos()
+        return lambda win, board: highlight_tile(pos, win, board) 
+
+    return lambda win, board: board
+
+
 while 1:
-    pygame.time.delay(50) 
+    pygame.time.delay(50)
+
+    # Some function about events
     for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
-    screen.fill(WHITE)
-    draw_grid(WIN, 8, 800)
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+        # Returns a function to handle the event
+        # For example clicking on unselected tile highlights the tile
+        # Clicking a selected tile un-highlights the tile
+        # Clicking on a tile when there's one selected attemps to move the piece to the target tile
+        event_action = event_response(event)
+
+        board = event_action(WIN, board)
+
     WIN.blit(bpr, (10, 10))
     pygame.display.flip()
 
