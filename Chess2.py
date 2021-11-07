@@ -32,12 +32,26 @@ class Piece:
         self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
         self.color = color
 
+    def can_move_to(self, pos):
+        return True
+
+    def draw_piece(self, pos):
+        x, y = pos
+        WIN.blit(
+            self.image,
+            (x * TILE_SIZE + self.MARGIN, y * TILE_SIZE + self.MARGIN)
+        )
+
+
 class Board:
     MARGIN = 5
 
     def __init__(self):
         self.draw_grid(8, 800)
         self.draw_pieces()
+
+    def piece(self, pos):
+        return self.pieces.get(pos)
 
     def create_pieces(self):
         pieces = {}
@@ -49,13 +63,8 @@ class Board:
     def draw_pieces(self):
         self.pieces = self.create_pieces()
         for pos, piece in self.pieces.items():
-            self.draw_piece(pos, piece)
+            piece.draw_piece(pos)
 
-
-    def draw_piece(self, pos, piece):
-        print(pos, piece.image_file)
-        x, y = pos
-        WIN.blit(piece.image, (x * TILE_SIZE + self.MARGIN, y * TILE_SIZE + self.MARGIN))
 
 
     def is_empty(self, pos):
@@ -72,21 +81,23 @@ class Board:
 
 
 class Tile:
-    def __init__(self, pos):
+    def __init__(self, pos, piece):
         self.x, self.y = pos
+        self.piece = piece
 
     def invalid(self):
         self.highlight(RED)
 
-    def highlight(self, color = YELLOW):
+    def highlight(self, color = YELLOW, redraw = True):
         pygame.draw.rect(
             WIN,
             color,
             pygame.Rect(self.x * TILE_SIZE + 1, self.y * TILE_SIZE + 1, TILE_SIZE - 1, TILE_SIZE - 1)
         )
+        redraw and self.piece and self.piece.draw_piece((self.x, self.y))
 
     def clear(self):
-        self.highlight(WHITE)
+        self.highlight(WHITE, False)
 
 
 class FirstMove:
@@ -101,12 +112,14 @@ class FirstMove:
         If it is a valid move the tile should be highlighted
         and switch to wait for a second move
         """
-        tile = Tile(pos)
-        if self.board.is_empty(pos) or self.board.piece(pos).color != player:
+        print("First move")
+        piece = self.board.piece(pos)
+        tile = Tile(pos, piece)
+        if not piece or piece.color != self.player:
             tile.invalid()
             return self
 
-        tile.highlight(pos)
+        tile.highlight()
 
         return SecondMove(self.board, self.player, pos)
 
@@ -114,17 +127,37 @@ class SecondMove:
     def __init__(self, board, player, pos):
         self.board = board
         self.player = player
-        self.pos = pos
+        self.firstPos = pos
 
 
-    def accept(self, pos):
+    def accept(self, secondPos):
         """
         The second move is valid if it selected a piece of the other player
         or is an empty space
         and the piece can move in that pattern
         """
-        tile = Tile(pos)
-        return self
+        print("Second move")
+        piece1 = self.board.piece(self.firstPos)
+        piece2 = self.board.piece(secondPos)
+        tile = Tile(secondPos, piece2)
+        if piece2 and piece2.color == self.player:
+            tile.invalid()
+            return self
+
+        if not piece2 and piece1.can_move_to(secondPos):
+            Tile(self.firstPos, None).clear()
+            piece1.draw_piece(secondPos)
+            #self.board.move_piece(firstPos, pos)
+
+        return FirstMove(self.board, self.next_player())
+
+    def next_player(self):
+        if self.player == WHITE:
+            return BLACK
+        else:
+            return WHITE
+        
+
 
 def pos_to_tile(pos):
     x, y = pos
