@@ -24,100 +24,111 @@ BLACK = (0, 0, 0)
 
 TILE_SIZE = WIDTH // 8
 
+class Piece:
+    MARGIN = 5
+    def __init__(self, image_file, color):
+        self.image_file = image_file
+        piece = pygame.image.load(image_file)
+        self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
+        self.color = color
+
 class Board:
     MARGIN = 5
 
-    def __init__(self, win):
-        self.pieces = {}
-        win.fill(WHITE)
-        self.draw_grid(win, 8, 800)
-        bp = pygame.image.load("pieces/black_pawn.png")
-        bpr = pygame.transform.scale(bp, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
-        self.pieces[(0, 0)] = bpr
-        self.draw_piece(win, (0, 0), bpr)
+    def __init__(self):
+        self.draw_grid(8, 800)
+        self.draw_pieces()
 
-    def draw_piece(self, win, pos, piece):
-        x, y = pos_to_tile(pos)
-        win.blit(piece, (x + self.MARGIN, y + self.MARGIN))
+    def create_pieces(self):
+        pieces = {}
+        for i in range(8):
+            pieces[(i, 1)] = Piece("pieces/black_pawn.png", BLACK)
+            pieces[(i, 6)] = Piece("pieces/black_pawn.png", WHITE)
+        return pieces
+
+    def draw_pieces(self):
+        self.pieces = self.create_pieces()
+        for pos, piece in self.pieces.items():
+            self.draw_piece(pos, piece)
+
+
+    def draw_piece(self, pos, piece):
+        print(pos, piece.image_file)
+        x, y = pos
+        WIN.blit(piece.image, (x * TILE_SIZE + self.MARGIN, y * TILE_SIZE + self.MARGIN))
 
 
     def is_empty(self, pos):
         return not self.pieces.get(pos)
 
 
-    def draw_grid(self, win, rows, width):
+    def draw_grid(self, rows, width):
+        WIN.fill(WHITE)
         gap = TILE_SIZE
         for i in range(rows):
-            pygame.draw.line(win, BLACK, (0, i * gap), (width, i * gap))
+            pygame.draw.line(WIN, BLACK, (0, i * gap), (width, i * gap))
             for j in range(rows):
-                pygame.draw.line(win, BLACK, (j * gap, 0), (j * gap, width))
+                pygame.draw.line(WIN, BLACK, (j * gap, 0), (j * gap, width))
 
 
 class Tile:
     def __init__(self, pos):
         self.x, self.y = pos
 
-    def invalid(self, win):
-        self.highlight(win, RED)
+    def invalid(self):
+        self.highlight(RED)
 
-    def highlight(self, win, color = YELLOW):
+    def highlight(self, color = YELLOW):
         pygame.draw.rect(
-            win,
+            WIN,
             color,
             pygame.Rect(self.x * TILE_SIZE + 1, self.y * TILE_SIZE + 1, TILE_SIZE - 1, TILE_SIZE - 1)
         )
 
-    def clear(self, win):
-        self.highlight(win, WHITE)
-
-
-class Move:
-    def __init__(self, board):
-        self.board = board
-        self.clear()
-
-    def is_invalid(self, pos):
-        """
-        The move is invalid if hasn't started and the tile is empty or
-        has started and the target is a piece of the same color or
-        has started and the source cannot move in that pattern
-        """
-        not self.source and self.board.is_empty(pos)
-
     def clear(self):
-        self.source = None
-        self.target = None
+        self.highlight(WHITE)
 
-    def start(self, pos):
-        self.source = pos
 
-    def has_started_on(self, pos):
-        return self.source == pos
+class FirstMove:
+    def __init__(self, board, player):
+        self.board = board
+        self.player = player
 
+    def accept(self, pos):
+        """
+        The move is invalid if is an empty tile
+        and the piece doesn't match the player color
+        If it is a valid move the tile should be highlighted
+        and switch to wait for a second move
+        """
+        tile = Tile(pos)
+        if self.board.is_empty(pos) or self.board.piece(pos).color != player:
+            tile.invalid()
+            return self
+
+        tile.highlight(pos)
+
+        return SecondMove(self.board, self.player, pos)
+
+class SecondMove:
+    def __init__(self, board, player, pos):
+        self.board = board
+        self.player = player
+        self.pos = pos
+
+
+    def accept(self, pos):
+        """
+        The second move is valid if it selected a piece of the other player
+        or is an empty space
+        and the piece can move in that pattern
+        """
+        tile = Tile(pos)
+        return self
 
 def pos_to_tile(pos):
     x, y = pos
     return x // TILE_SIZE, y // TILE_SIZE
-
-
-def highlight_tile(pos, win, move):
-    bpos = pos_to_tile(pos)
-    tile = Tile(bpos)
-
-    # There's no piece in that position -> show is an error
-    # The move already started on that position -> should be cleared/reset
-    # The move hasn't started -> make it start on that position
-    # The move has started and target is a different position -> unhighlight and move the piece
-    if move.is_invalid(bpos):
-        tile.invalid(win)
-    elif move.has_started_on(bpos):
-        tile.clear(win)
-        move.clear()
-    else:
-        tile.highlight(win)
-        move.start(bpos)
-
-    return move
 
 
 def event_response(event):
@@ -127,16 +138,17 @@ def event_response(event):
     # And deselect the previous
     if event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
-        return lambda win, move: highlight_tile(pos, win, move)
+        bpos = pos_to_tile(pos)
+        return lambda move: move.accept(bpos)
 
-    return lambda win, move: move
+    return lambda move: move
 
 
 # Draws the board and the pieces
-board = Board(WIN)
+board = Board()
 
 # Move to use for events
-move = Move(board)
+move = FirstMove(board, WHITE)
 
 while 1:
     pygame.time.delay(50)
@@ -153,7 +165,7 @@ while 1:
         # Clicking on a tile when there's one selected attemps to move the piece to the target tile
         event_action = event_response(event)
 
-        move = event_action(WIN, move)
+        move = event_action(move)
 
     pygame.display.flip()
 
