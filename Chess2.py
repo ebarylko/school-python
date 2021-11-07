@@ -37,7 +37,7 @@ class Piece:
         self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
         self.color = color
 
-    def can_move_to(self, pos1, pos2):
+    def can_move_to(self, pos1, pos2, board):
         return False
 
 
@@ -50,22 +50,57 @@ class Piece:
 
 
 class Rook(Piece):
-    def can_move_to(self, pos1, pos2):
+    def can_move_to(self, pos1, pos2, board):
         x1, y1 = pos1
         x2, y2 = pos2
+        if abs(x2 - x1) > 0 and abs(y2 - y1) == 0:
+            a, b = sorted([x1, x2])
+            return not [board.piece((x, y1)) for x in range(a + 1, b) if board.piece((x, y1))]
 
-        return (abs(x2 - x1) > 0 and abs(y2 - y1) == 0) or (abs(x2 - x1) == 0 and abs(y2 - y1) > 0)
+        if abs(x2 - x1) == 0 and abs(y2 - y1) > 0:
+            a, b = sorted([y1, y2])
+            return not [board.piece((x1, y)) for y in range(a + 1, b) if board.piece((x1, y))]
+
+        return False
+
+
+class Knight(Piece):
+    def can_move_to(self, pos1, pos2, board):
+        x1, y1 = pos1
+        x2, y2 = pos2
+        diff_x = abs(x2 - x1)
+        diff_y = abs(y2 - y1)
+        return diff_x > 0 and diff_y > 0 and diff_x + diff_y == 3
+
+class Bishop(Piece):    
+    def can_move_to(self, pos1, pos2, board):
+        x1, y1 = pos1
+        x2, y2 = pos2
+        diff_x = abs(x2 - x1)
+        diff_y = abs(y2 - y1)
+        return not [board.piece((x, y)) for x, y in range(a + 1, b) if board.piece((x, y1))]
+        
+        return diff_x == diff_y
+
+class King(Piece):
+    def can_move_to(self, pos1, pos2, board):
+        x1, y1 = pos1
+        x2, y2 = pos2
+        diff_x = abs(x2 - x1)
+        diff_y = abs(y2 - y1)
+        print(diff_x, diff_y, "waterty")
+        return diff_x + diff_y <= 2 and diff_x + diff_y > 0 and diff_x <= 1 and diff_y <= 1
 
 
 class Pawn(Piece):
-    def can_move_to(self, pos1, pos2):
+    def can_move_to(self, pos1, pos2, board):
         x1, y1 = pos1
         x2, y2 = pos2
         hrz = abs(x2 - x1) <= 1
         if self.color == BLACK:
-            return hrz and (y2 - y1 == 1 or y1 == 1 and y2 == 3 and x2 == x1)
+            return hrz and (y2 - y1 == 1 or y1 == 1 and y2 == 3 and x2 == x1 and not board.piece((x1, 2)))
 
-        return hrz and (y2 - y1 == -1 or y1 == 6 and y2 == 4 and x2 == x1)
+        return hrz and (y2 - y1 == -1 or y1 == 6 and y2 == 4 and x2 == x1 and not board.piece((x1, 5)))
 
 
 
@@ -85,7 +120,7 @@ class Board:
 
     def create_pieces(self):
         pieces = {}
-        royals = [("rook", Rook), ("knight", Piece), ("bishop", Piece), ("queen", Piece), ("king", Piece), ("bishop", Piece), ("knight", Piece), ("rook", Rook)]
+        royals = [("rook", Rook), ("knight", Knight), ("bishop", Bishop), ("queen", Piece), ("king", King), ("bishop", Bishop), ("knight", Knight), ("rook", Rook)]
 
         for i, (piece, klass) in enumerate(royals):
             pieces[(i,0)] = klass("pieces/black_{0}.png".format(piece), BLACK)
@@ -139,6 +174,9 @@ class Move:
         self.board = board
         self.player = player
 
+    def cancel(self):
+        return FirstMove(self.board, self.player)
+
     def preview(self, pos, prev):
         self.check_previous(pos, prev)
         self.preview_imp(pos)
@@ -186,6 +224,10 @@ class SecondMove(Move):
         self.player = player
         self.first_pos = pos
 
+    def cancel(self):
+        piece1 = self.board.piece(self.first_pos)
+        Tile(self.first_pos, piece1).unhighlight()
+        return super().cancel()
 
     def check_previous(self, pos, prev):
         if prev and pos != prev and prev != self.first_pos:
@@ -205,7 +247,7 @@ class SecondMove(Move):
             tile.invalid()
             return
 
-        if not piece1.can_move_to(self.first_pos, second_pos):
+        if not piece1.can_move_to(self.first_pos, second_pos, self.board):
             tile.invalid()
             return
 
@@ -225,7 +267,7 @@ class SecondMove(Move):
         if piece2 and piece2.color == self.player:
             return self
 
-        if piece1.can_move_to(self.first_pos, second_pos):
+        if piece1.can_move_to(self.first_pos, second_pos, self.board):
             Tile(self.first_pos, None).clear()
             piece1.draw_piece(second_pos)
             self.board.move_piece(self.first_pos, second_pos)
@@ -254,11 +296,15 @@ def event_response(event, move, previous_pos):
     # Either we need to select a tile
     # Or move a piece to the tiile
     # And deselect the previous
-    print(event.type)
     pos = pygame.mouse.get_pos()
     bpos = pos_to_tile(pos)
     move.preview(bpos, previous_pos)
-    print(bpos)
+
+    if event.type == pygame.KEYDOWN:
+        # If pressed key is ESC cancel selection
+        if event.key == pygame.K_ESCAPE:
+            return move.cancel(), bpos
+
     if event.type == pygame.MOUSEBUTTONDOWN:
         return move.accept(bpos), bpos
 
@@ -271,7 +317,9 @@ board = Board()
 
 # Move to use for events
 move = FirstMove(board, WHITE)
+
 previous_pos = None
+
 while 1:
     pygame.time.delay(50)
 
