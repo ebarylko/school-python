@@ -22,6 +22,11 @@ YELLOW = (204, 204, 0)
 BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
 
+INVALID = (206, 128, 112)
+SELECTED = (235, 238, 151)
+POSSIBLE = (152, 238, 151)
+
+
 TILE_SIZE = WIDTH // 8
 
 class Piece:
@@ -32,8 +37,9 @@ class Piece:
         self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
         self.color = color
 
-    def can_move_to(self, pos):
-        return True
+    def can_move_to(self, pos1, pos2):
+        return False
+
 
     def draw_piece(self, pos):
         x, y = pos
@@ -41,6 +47,19 @@ class Piece:
             self.image,
             (x * TILE_SIZE + self.MARGIN, y * TILE_SIZE + self.MARGIN)
         )
+
+
+
+class Pawn(Piece):
+    def can_move_to(self, pos1, pos2):
+        x1, y1 = pos1
+        x2, y2 = pos2
+        hrz =abs(x2 - x1) <= 1
+        if self.color == BLACK:
+            return hrz and (y2 - y1 == 1 or y1 == 1 and y2 == 3 and x2 == x1)
+
+        return hrz and (y2 - y1 == -1 or y1 == 6 and y2 == 4 and x2 == x1)
+
 
 
 class Board:
@@ -64,8 +83,8 @@ class Board:
             pieces[(i,7)] = Piece("pieces/white_{0}.png".format(piece), WHITE)
             
         for i in range(8):
-            pieces[(i, 1)] = Piece("pieces/black_pawn.png", BLACK)
-            pieces[(i, 6)] = Piece("pieces/white_pawn.png", WHITE)
+            pieces[(i, 1)] = Pawn("pieces/black_pawn.png", BLACK)
+            pieces[(i, 6)] = Pawn("pieces/white_pawn.png", WHITE)
         return pieces
 
     def draw_pieces(self):
@@ -89,9 +108,9 @@ class Tile:
         self.piece = piece
 
     def invalid(self):
-        self.highlight(RED)
+        self.highlight(INVALID)
 
-    def highlight(self, color = YELLOW, redraw = True):
+    def highlight(self, color = SELECTED, redraw = True):
         pygame.draw.rect(
             WIN,
             color,
@@ -99,14 +118,39 @@ class Tile:
         )
         redraw and self.piece and self.piece.draw_piece((self.x, self.y))
 
+    def unhighlight(self):
+        self.highlight(WHITE)
+
     def clear(self):
         self.highlight(WHITE, False)
 
 
-class FirstMove:
+class Move:
     def __init__(self, board, player):
         self.board = board
         self.player = player
+
+    def preview(self, pos, prev):
+        self.check_previous(pos, prev)
+        self.preview_imp(pos)
+
+
+class FirstMove(Move):
+    def check_previous(self, pos, prev):
+        if prev and pos != prev:
+            piece = self.board.piece(prev)
+            Tile(prev, piece).unhighlight()
+
+
+    def preview_imp(self, pos):
+        piece = self.board.piece(pos)
+        tile = Tile(pos, piece)
+        if not piece or piece.color != self.player:
+            tile.invalid()
+            return
+
+        tile.highlight(POSSIBLE)
+
 
     def accept(self, pos):
         """
@@ -115,51 +159,80 @@ class FirstMove:
         If it is a valid move the tile should be highlighted
         and switch to wait for a second move
         """
+        print(self.player)
         print("First move")
         piece = self.board.piece(pos)
         tile = Tile(pos, piece)
         if not piece or piece.color != self.player:
-            tile.invalid()
             return self
 
         tile.highlight()
 
         return SecondMove(self.board, self.player, pos)
 
-class SecondMove:
+
+class SecondMove(Move):
     def __init__(self, board, player, pos):
         self.board = board
         self.player = player
-        self.firstPos = pos
+        self.first_pos = pos
 
 
-    def accept(self, secondPos):
+    def check_previous(self, pos, prev):
+        if prev and pos != prev and prev != self.first_pos:
+            piece = self.board.piece(prev)
+            Tile(prev, piece).unhighlight()
+
+
+    def preview_imp(self, second_pos):
+        piece1 = self.board.piece(self.first_pos)
+        piece2 = self.board.piece(second_pos)
+        tile = Tile(second_pos, piece2)
+
+        if second_pos == self.first_pos:
+            return
+
+        if piece2 and piece2.color == self.player:
+            tile.invalid()
+            return
+
+        if not piece1.can_move_to(self.first_pos, second_pos):
+            tile.invalid()
+            return
+
+        tile.highlight(POSSIBLE)
+
+
+    def accept(self, second_pos):
         """
         The second move is valid if it selected a piece of the other player
         or is an empty space
         and the piece can move in that pattern
         """
         print("Second move")
-        piece1 = self.board.piece(self.firstPos)
-        piece2 = self.board.piece(secondPos)
-        tile = Tile(secondPos, piece2)
+        piece1 = self.board.piece(self.first_pos)
+        piece2 = self.board.piece(second_pos)
+        tile = Tile(second_pos, piece2)
         if piece2 and piece2.color == self.player:
-            tile.invalid()
             return self
 
-        if not piece2 and piece1.can_move_to(secondPos):
-            Tile(self.firstPos, None).clear()
-            piece1.draw_piece(secondPos)
-            self.board.move_piece(self.firstPos, secondPos)
+        if piece1.can_move_to(self.first_pos, second_pos):
+            Tile(self.first_pos, None).clear()
+            piece1.draw_piece(second_pos)
+            self.board.move_piece(self.first_pos, second_pos)
+            return FirstMove(self.board, self.next_player())
 
-        return FirstMove(self.board, self.next_player())
+        tile.invalid()
+
+        return self
+
 
     def next_player(self):
         if self.player == WHITE:
             return BLACK
         else:
             return WHITE
-        
+
 
 
 def pos_to_tile(pos):
@@ -167,17 +240,21 @@ def pos_to_tile(pos):
     return x // TILE_SIZE, y // TILE_SIZE
 
 
-def event_response(event):
+def event_response(event, move, previous_pos):
 
     # Either we need to select a tile
     # Or move a piece to the tiile
     # And deselect the previous
+    print(event.type)
+    pos = pygame.mouse.get_pos()
+    bpos = pos_to_tile(pos)
+    move.preview(bpos, previous_pos)
+    print(bpos)
     if event.type == pygame.MOUSEBUTTONDOWN:
-        pos = pygame.mouse.get_pos()
-        bpos = pos_to_tile(pos)
-        return lambda move: move.accept(bpos)
+        return move.accept(bpos), bpos
 
-    return lambda move: move
+
+    return move, bpos
 
 
 # Draws the board and the pieces
@@ -185,7 +262,7 @@ board = Board()
 
 # Move to use for events
 move = FirstMove(board, WHITE)
-
+previous_pos = None
 while 1:
     pygame.time.delay(50)
 
@@ -199,9 +276,7 @@ while 1:
         # For example clicking on unselected tile highlights the tile
         # Clicking a selected tile un-highlights the tile
         # Clicking on a tile when there's one selected attemps to move the piece to the target tile
-        event_action = event_response(event)
-
-        move = event_action(move)
+        move, previous_pos = event_response(event, move, previous_pos)
 
     pygame.display.flip()
 
