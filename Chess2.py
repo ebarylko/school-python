@@ -49,12 +49,19 @@ class Piece:
         )
 
 
+class Rook(Piece):
+    def can_move_to(self, pos1, pos2):
+        x1, y1 = pos1
+        x2, y2 = pos2
+
+        return (abs(x2 - x1) > 0 and abs(y2 - y1) == 0) or (abs(x2 - x1) == 0 and abs(y2 - y1) > 0)
+
 
 class Pawn(Piece):
     def can_move_to(self, pos1, pos2):
         x1, y1 = pos1
         x2, y2 = pos2
-        hrz =abs(x2 - x1) <= 1
+        hrz = abs(x2 - x1) <= 1
         if self.color == BLACK:
             return hrz and (y2 - y1 == 1 or y1 == 1 and y2 == 3 and x2 == x1)
 
@@ -78,10 +85,12 @@ class Board:
 
     def create_pieces(self):
         pieces = {}
-        for i, piece in enumerate(["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]):
-            pieces[(i,0)] = Piece("pieces/black_{0}.png".format(piece), BLACK)
-            pieces[(i,7)] = Piece("pieces/white_{0}.png".format(piece), WHITE)
-            
+        royals = [("rook", Rook), ("knight", Piece), ("bishop", Piece), ("queen", Piece), ("king", Piece), ("bishop", Piece), ("knight", Piece), ("rook", Rook)]
+
+        for i, (piece, klass) in enumerate(royals):
+            pieces[(i,0)] = klass("pieces/black_{0}.png".format(piece), BLACK)
+            pieces[(i,7)] = klass("pieces/white_{0}.png".format(piece), WHITE)
+
         for i in range(8):
             pieces[(i, 1)] = Pawn("pieces/black_pawn.png", BLACK)
             pieces[(i, 6)] = Pawn("pieces/white_pawn.png", WHITE)
