@@ -29,6 +29,10 @@ POSSIBLE = (152, 238, 151)
 
 TILE_SIZE = WIDTH // 8
 
+HORIZONTAL = 1
+VERTICAL = 2
+DIAGONAL = 3
+
 class Piece:
     MARGIN = 5
     def __init__(self, image_file, color):
@@ -49,19 +53,33 @@ class Piece:
         )
 
 
-class Rook(Piece):
-    def can_move_to(self, pos1, pos2, board):
+    def not_in_between(self, pos1, pos2, board):
         x1, y1 = pos1
         x2, y2 = pos2
-        if abs(x2 - x1) > 0 and abs(y2 - y1) == 0:
+        diff_x = abs(x2 - x1)
+        diff_y = abs(y2 - y1)
+
+        if diff_x > 0 and diff_y== 0:
             a, b = sorted([x1, x2])
-            return not [board.piece((x, y1)) for x in range(a + 1, b) if board.piece((x, y1))]
+            print("HORIZONTAL")
+            return not [board.piece((x, y1)) for x in range(a + 1, b) if board.piece((x, y1))] and HORIZONTAL
 
-        if abs(x2 - x1) == 0 and abs(y2 - y1) > 0:
+        if diff_x == 0 and diff_y > 0:
             a, b = sorted([y1, y2])
-            return not [board.piece((x1, y)) for y in range(a + 1, b) if board.piece((x1, y))]
+            print("VERTICAL")
+            return not [board.piece((x1, y)) for y in range(a + 1, b) if board.piece((x1, y))] and VERTICAL
 
-        return False
+        sign = lambda a: (a>0) - (a<0)
+        x_inc = sign(x2 - x1)
+        y_inc = sign(y2 - y1)
+        print("DIAGONAL", x_inc, y_inc)
+        return diff_x == diff_y and not [board.piece((x1 + i * x_inc, y1 + i * y_inc)) for i in range(1, diff_x) if board.piece((x1 + i * x_inc, y1 + i * y_inc))] and DIAGONAL
+
+
+class Rook(Piece):
+    def can_move_to(self, pos1, pos2, board):
+        kind = self.not_in_between(pos1, pos2, board)
+        return kind in [HORIZONTAL, VERTICAL]
 
 
 class Knight(Piece):
@@ -72,15 +90,25 @@ class Knight(Piece):
         diff_y = abs(y2 - y1)
         return diff_x > 0 and diff_y > 0 and diff_x + diff_y == 3
 
-class Bishop(Piece):    
+
+class Bishop(Piece):
     def can_move_to(self, pos1, pos2, board):
         x1, y1 = pos1
         x2, y2 = pos2
+        sign = lambda a: (a>0) - (a<0)
+        x_inc = sign(x2 - x1)
+        y_inc = sign(y2 - y1)
         diff_x = abs(x2 - x1)
         diff_y = abs(y2 - y1)
-        return not [board.piece((x, y)) for x, y in range(a + 1, b) if board.piece((x, y1))]
-        
-        return diff_x == diff_y
+        in_between = [board.piece((x1 + i * x_inc, y1 + i * y_inc)) for i in range(1, diff_x) if board.piece((x1 + i * x_inc, y1 + i * y_inc))]
+
+        return diff_x == diff_y and not in_between
+
+
+class Queen(Piece):
+    def can_move_to(self, pos1, pos2, board):
+        return self.not_in_between(pos1, pos2, board)
+
 
 class King(Piece):
     def can_move_to(self, pos1, pos2, board):
@@ -88,7 +116,6 @@ class King(Piece):
         x2, y2 = pos2
         diff_x = abs(x2 - x1)
         diff_y = abs(y2 - y1)
-        print(diff_x, diff_y, "waterty")
         return diff_x + diff_y <= 2 and diff_x + diff_y > 0 and diff_x <= 1 and diff_y <= 1
 
 
@@ -120,7 +147,7 @@ class Board:
 
     def create_pieces(self):
         pieces = {}
-        royals = [("rook", Rook), ("knight", Knight), ("bishop", Bishop), ("queen", Piece), ("king", King), ("bishop", Bishop), ("knight", Knight), ("rook", Rook)]
+        royals = [("rook", Rook), ("knight", Knight), ("bishop", Bishop), ("queen", Queen), ("king", King), ("bishop", Bishop), ("knight", Knight), ("rook", Rook)]
 
         for i, (piece, klass) in enumerate(royals):
             pieces[(i,0)] = klass("pieces/black_{0}.png".format(piece), BLACK)
