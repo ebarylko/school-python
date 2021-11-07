@@ -2,7 +2,7 @@
 #Eitan
 #uses pygame
 
-import sys, pygame
+import sys, pygame, re
 pygame.init()
 
 
@@ -37,6 +37,8 @@ class Piece:
     MARGIN = 5
     def __init__(self, image_file, color):
         self.image_file = image_file
+        m = re.search('/(.+)\.', image_file)
+        self.name = m.group(1)
         piece = pygame.image.load(image_file)
         self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
         self.color = color
@@ -61,18 +63,15 @@ class Piece:
 
         if diff_x > 0 and diff_y== 0:
             a, b = sorted([x1, x2])
-            print("HORIZONTAL")
             return not [board.piece((x, y1)) for x in range(a + 1, b) if board.piece((x, y1))] and HORIZONTAL
 
         if diff_x == 0 and diff_y > 0:
             a, b = sorted([y1, y2])
-            print("VERTICAL")
             return not [board.piece((x1, y)) for y in range(a + 1, b) if board.piece((x1, y))] and VERTICAL
 
         sign = lambda a: (a>0) - (a<0)
         x_inc = sign(x2 - x1)
         y_inc = sign(y2 - y1)
-        print("DIAGONAL", x_inc, y_inc)
         return diff_x == diff_y and not [board.piece((x1 + i * x_inc, y1 + i * y_inc)) for i in range(1, diff_x) if board.piece((x1 + i * x_inc, y1 + i * y_inc))] and DIAGONAL
 
 
@@ -202,6 +201,7 @@ class Move:
         self.player = player
 
     def cancel(self):
+        print("Back to selection")
         return FirstMove(self.board, self.player)
 
     def preview(self, pos, prev):
@@ -233,14 +233,14 @@ class FirstMove(Move):
         If it is a valid move the tile should be highlighted
         and switch to wait for a second move
         """
-        print(self.player)
-        print("First move")
         piece = self.board.piece(pos)
         tile = Tile(pos, piece)
         if not piece or piece.color != self.player:
             return self
 
         tile.highlight()
+        print("Selected ", piece.name, pos)
+        print("Choose destination ")
 
         return SecondMove(self.board, self.player, pos)
 
@@ -287,7 +287,6 @@ class SecondMove(Move):
         or is an empty space
         and the piece can move in that pattern
         """
-        print("Second move")
         piece1 = self.board.piece(self.first_pos)
         piece2 = self.board.piece(second_pos)
         tile = Tile(second_pos, piece2)
@@ -298,9 +297,12 @@ class SecondMove(Move):
             Tile(self.first_pos, None).clear()
             piece1.draw_piece(second_pos)
             self.board.move_piece(self.first_pos, second_pos)
+            print("Moved to ", second_pos)
+            if self.next_player() == WHITE:
+                print("Next White pieces turn")
+            else:
+                print("Next Black pieces turn")
             return FirstMove(self.board, self.next_player())
-
-        tile.invalid()
 
         return self
 
@@ -346,6 +348,9 @@ board = Board()
 move = FirstMove(board, WHITE)
 
 previous_pos = None
+
+print("White pieces turn")
+
 
 while 1:
     pygame.time.delay(50)
