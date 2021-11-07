@@ -53,22 +53,25 @@ class Board:
     def piece(self, pos):
         return self.pieces.get(pos)
 
+    def move_piece(self, source, target):
+        self.pieces[target] = self.pieces[source]
+        del self.pieces[source]
+
     def create_pieces(self):
         pieces = {}
+        for i, piece in enumerate(["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]):
+            pieces[(i,0)] = Piece("pieces/black_{0}.png".format(piece), BLACK)
+            pieces[(i,7)] = Piece("pieces/white_{0}.png".format(piece), WHITE)
+            
         for i in range(8):
             pieces[(i, 1)] = Piece("pieces/black_pawn.png", BLACK)
-            pieces[(i, 6)] = Piece("pieces/black_pawn.png", WHITE)
+            pieces[(i, 6)] = Piece("pieces/white_pawn.png", WHITE)
         return pieces
 
     def draw_pieces(self):
         self.pieces = self.create_pieces()
         for pos, piece in self.pieces.items():
             piece.draw_piece(pos)
-
-
-
-    def is_empty(self, pos):
-        return not self.pieces.get(pos)
 
 
     def draw_grid(self, rows, width):
@@ -147,7 +150,7 @@ class SecondMove:
         if not piece2 and piece1.can_move_to(secondPos):
             Tile(self.firstPos, None).clear()
             piece1.draw_piece(secondPos)
-            #self.board.move_piece(firstPos, pos)
+            self.board.move_piece(self.firstPos, secondPos)
 
         return FirstMove(self.board, self.next_player())
 
