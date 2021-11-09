@@ -122,11 +122,22 @@ class Pawn(Piece):
     def can_move_to(self, pos1, pos2, board):
         x1, y1 = pos1
         x2, y2 = pos2
-        hrz = abs(x2 - x1) <= 1
-        if self.color == BLACK:
-            return hrz and (y2 - y1 == 1 or y1 == 1 and y2 == 3 and x2 == x1 and not board.piece((x1, 2)))
+        diff_x = x2 - x1
+        diff_y = y2 -y1
 
-        return hrz and (y2 - y1 == -1 or y1 == 6 and y2 == 4 and x2 == x1 and not board.piece((x1, 5)))
+        piece = board.piece((x2, y2))
+
+        other = BLACK
+        is_ahead = diff_x == 0 and (diff_y == -1 or (y1 == 6 and y2 == 4))
+        is_diagonal = abs(diff_x) == 1 and diff_y == -1
+
+        if self.color == BLACK:
+            other = WHITE
+            is_ahead = diff_x == 0 and (diff_y == 1 or (y1 == 1 and y2 == 3))
+            is_diagonal = abs(diff_x) == 1 and diff_y == 1
+
+        return (piece and piece.color == other and is_diagonal) or (not piece and is_ahead)
+
 
 
 
