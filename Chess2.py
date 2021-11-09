@@ -5,37 +5,58 @@
 import sys, pygame, re
 pygame.init()
 
-
+"""
+Width and height of the board
+"""
 WIDTH = 800
 
-""" This is creating the window that we are playing on, it takes a tuple argument which is the dimensions of the window so in this case 800 x 800px
+"""
+This is creating the window that we are playing on, it takes a tuple argument which is the dimensions of the window so in this case 800 x 800px
 """
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 
 
 pygame.display.set_caption("Chess")
 
+"""
+Colors constants
+"""
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREY = (128, 128, 128)
-YELLOW = (204, 204, 0)
-BLUE = (50, 255, 255)
 BLACK = (0, 0, 0)
 
 INVALID = (206, 128, 112)
 SELECTED = (235, 238, 151)
 POSSIBLE = (152, 238, 151)
 
-
+"""
+Height and width of each tile
+"""
 TILE_SIZE = WIDTH // 8
 
+"""
+Constants for kind of moves
+"""
 HORIZONTAL = 1
 VERTICAL = 2
 DIAGONAL = 3
 
 class Piece:
+    """
+    Represents the base class for a chess piece
+    """
+
+    """
+    Margin to draw the pieces
+    """
     MARGIN = 5
+
     def __init__(self, image_file, color):
+        """
+        Pre: Takes the image file and the color
+        Post: initializes the instance of the Piece class by
+        calculating the name, loading the image and resizing it
+        and storing the color
+        """
         self.image_file = image_file
         m = re.search('/(.+)\.', image_file)
         self.name = m.group(1)
@@ -43,11 +64,12 @@ class Piece:
         self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
         self.color = color
 
-    def can_move_to(self, pos1, pos2, board):
-        return False
-
 
     def draw_piece(self, pos):
+        """
+        Pre: Takes a position where the piece should be drawn
+        Post: Shows the image on the screen
+        """
         x, y = pos
         WIN.blit(
             self.image,
@@ -56,6 +78,11 @@ class Piece:
 
 
     def not_in_between(self, pos1, pos2, board):
+        """
+        Pre: Takes the begin and ending position for a move and the board
+        Post: Returns the kind of move (HORIZONTAL, VERTICAL or DIAGONAL)
+        if there's no piece between pos1 and pos2, False otherwise.
+        """
         x1, y1 = pos1
         x2, y2 = pos2
         diff_x = abs(x2 - x1)
@@ -76,13 +103,35 @@ class Piece:
 
 
 class Rook(Piece):
+    """
+    Represents the Rook chess piece
+    """
+
     def can_move_to(self, pos1, pos2, board):
+        """
+        Pre: Takes start and end position and a board,
+        assumes pos2 is empty or occupied by piece of
+        other color
+        Post: Returns True if the kind of move is HORIZONTAL
+        or VERTICAL, False otherwise.
+        """
         kind = self.not_in_between(pos1, pos2, board)
         return kind in [HORIZONTAL, VERTICAL]
 
 
 class Knight(Piece):
+    """
+    Represents the Knight chess piece
+    """
+
     def can_move_to(self, pos1, pos2, board):
+        """
+        Pre: Takes start and end position and a board,
+        assumes pos2 is empty or occupied by piece of
+        other color
+        Post: Returns True if pos2 is two ahead and one to the side
+        or one ahead and two the side of pos1
+        """
         x1, y1 = pos1
         x2, y2 = pos2
         diff_x = abs(x2 - x1)
@@ -91,7 +140,18 @@ class Knight(Piece):
 
 
 class Bishop(Piece):
+    """
+    Represent the Bishop chess piece
+    """
+
     def can_move_to(self, pos1, pos2, board):
+        """
+        Pre: Takes start and end position and a board,
+        assumes pos2 is empty or occupied by piece of
+        other color
+        Post: Returns True if pos2 is diagonal to pos1 and there
+        is no piece between them.
+        """
         x1, y1 = pos1
         x2, y2 = pos2
         sign = lambda a: (a>0) - (a<0)
@@ -105,12 +165,34 @@ class Bishop(Piece):
 
 
 class Queen(Piece):
+    """
+    Represents the Queen chess piece
+    """
+
     def can_move_to(self, pos1, pos2, board):
+        """
+        Pre: Takes start and end position and a board,
+        assumes pos2 is empty or occupied by piece of
+        other color
+        Post: Returns True if the pos1 and pos2 are either
+        HORIZONTAL, VERTICAL or DIAGONAL.
+        """
         return self.not_in_between(pos1, pos2, board)
 
 
 class King(Piece):
+    """
+    Represents the King chess piece
+    """
+
     def can_move_to(self, pos1, pos2, board):
+        """
+        Pre: Takes start and end position and a board,
+        assumes pos2 is empty or occupied by piece of
+        other color
+        Post: Returns True if pos2 is one tile away
+        from pos1 
+        """
         x1, y1 = pos1
         x2, y2 = pos2
         diff_x = abs(x2 - x1)
@@ -119,7 +201,17 @@ class King(Piece):
 
 
 class Pawn(Piece):
+    "class representing Pawn chess piece"
     def can_move_to(self, pos1, pos2, board):
+        """
+        Pre: Takes start and end position and a board,
+        assumes pos2 is empty or occupied by piece of
+        other color
+        Post: Returns True if pos2 is one tile away
+        (two, when it is the first move)
+        from pos1 and either is diagonal and occupied,
+        or vertical and empty. 
+        """
         x1, y1 = pos1
         x2, y2 = pos2
         diff_x = x2 - x1
@@ -142,20 +234,41 @@ class Pawn(Piece):
 
 
 class Board:
+    """
+    represents a chessboard with a
+    Dictionary to store pieces by coordinate
+    """
     MARGIN = 5
 
     def __init__(self):
+        """
+        Pre: (none)
+        Post: draws the grid and the pieces on the screen
+        """
         self.draw_grid(8, 800)
         self.draw_pieces()
 
     def piece(self, pos):
+        """
+        Pre: takes a position
+        Post: returns the piece in that position or None
+        """
         return self.pieces.get(pos)
 
     def move_piece(self, source, target):
+        """
+        Pre: takes a source and target position
+        Post: assigns the piece in source to target,
+        clears source position in the board
+        """
         self.pieces[target] = self.pieces[source]
         del self.pieces[source]
 
     def create_pieces(self):
+        """
+        Pre: (none)
+        Post: returns a dictionary with the pieces in their places
+        """
         pieces = {}
         royals = [("rook", Rook), ("knight", Knight), ("bishop", Bishop), ("queen", Queen), ("king", King), ("bishop", Bishop), ("knight", Knight), ("rook", Rook)]
 
@@ -169,12 +282,21 @@ class Board:
         return pieces
 
     def draw_pieces(self):
+        """
+        Pre: (none)
+        Post: creates the pieces and draws each one
+        on the board"""
         self.pieces = self.create_pieces()
         for pos, piece in self.pieces.items():
             piece.draw_piece(pos)
 
 
     def draw_grid(self, rows, width):
+        """
+        Pre: takes how many rows and a value for
+        the width
+        Post: draws a grid on the screen
+        """
         WIN.fill(WHITE)
         gap = TILE_SIZE
         for i in range(rows):
@@ -184,14 +306,30 @@ class Board:
 
 
 class Tile:
+    """
+    represents a tile in the board
+    """
     def __init__(self, pos, piece):
+        """
+        Pre: takes a position and a piece
+        Post: stores the position and piece in the instance
+        """
         self.x, self.y = pos
         self.piece = piece
 
     def invalid(self):
+        """
+        Pre: (none)
+        Post: highlights the position of the tile as invalid
+        """
         self.highlight(INVALID)
 
     def highlight(self, color = SELECTED, redraw = True):
+        """
+        Pre: takes a color constant and a flag to redraw the piece
+        Post: highlights a rectangle on the screen with the given
+        color and draws the piece on top if the redraw flag is True
+        """
         pygame.draw.rect(
             WIN,
             color,
@@ -200,34 +338,71 @@ class Tile:
         redraw and self.piece and self.piece.draw_piece((self.x, self.y))
 
     def unhighlight(self):
+        """
+        Pre: (none)
+        Post: clears the square and redraws the piece
+        """
         self.highlight(WHITE)
 
     def clear(self):
+        """
+        Pre: (none)
+        Post: clears the square(paints it white)
+        """
         self.highlight(WHITE, False)
 
 
 class Move:
+    """
+    Base class for representing a move
+    """
     def __init__(self, board, player):
+        """
+        Pre: takes a board and a player
+        Post: stores the board and player in instance
+        """
         self.board = board
         self.player = player
 
     def cancel(self):
+        """
+        Pre: (none)
+        Post: returns an instance of first move (no piece selected)
+        """
         print("Back to selection")
         return FirstMove(self.board, self.player)
 
     def preview(self, pos, prev):
+        """
+        Pre: takes a position and the previous previewed position
+        Post: highlights tile to indicate if it is a possible move
+        """
         self.check_previous(pos, prev)
         self.preview_imp(pos)
 
 
 class FirstMove(Move):
+    """
+    Represents piece selection before deciding destination
+    """
     def check_previous(self, pos, prev):
+        """
+        Pre: takes current and previous position
+        Post: if there is a previous position and it differs
+        from the current one, unhighlights previous position
+        """
         if prev and pos != prev:
             piece = self.board.piece(prev)
             Tile(prev, piece).unhighlight()
 
 
     def preview_imp(self, pos):
+        """
+        Pre:takes a position
+        Post: highlights the position as a possible option unless
+        the position has no piece or has a piece but is of a
+        different color from the current player
+        """
         piece = self.board.piece(pos)
         tile = Tile(pos, piece)
         if not piece or piece.color != self.player:
@@ -239,10 +414,11 @@ class FirstMove(Move):
 
     def accept(self, pos):
         """
-        The move is invalid if is an empty tile
-        and the piece doesn't match the player color
-        If it is a valid move the tile should be highlighted
-        and switch to wait for a second move
+        Pre: takes a position
+        Post: Returns the same first move if there is no piece in
+        that position or the piece color doesn't match the current player.
+        Otheriwse highlights the current position as selected
+        and returns a second move instance to wait for the destination.
         """
         piece = self.board.piece(pos)
         tile = Tile(pos, piece)
@@ -257,23 +433,50 @@ class FirstMove(Move):
 
 
 class SecondMove(Move):
+    """
+    Represents the move after selecting the piece in the board
+    """
+
     def __init__(self, board, player, pos):
+        """
+        Pre: Takes a board a player color and a position
+        Post: Stores the board, the player and the position as the first position
+        """
         self.board = board
         self.player = player
         self.first_pos = pos
 
     def cancel(self):
+        """
+        Pre: (none)
+        Post: Unhighlights the selection and calls the parent
+        cancel to return a first move (back to selection).
+        """
         piece1 = self.board.piece(self.first_pos)
         Tile(self.first_pos, piece1).unhighlight()
         return super().cancel()
 
     def check_previous(self, pos, prev):
+        """
+        Pre: Takes a postition and a previous previewed position
+        Post: Unhighlights the previous position unless
+        it does not exists or the current and previous position are the same 
+        or is the first position selected in the previous move
+        """
         if prev and pos != prev and prev != self.first_pos:
             piece = self.board.piece(prev)
             Tile(prev, piece).unhighlight()
 
 
     def preview_imp(self, second_pos):
+        """
+        Pre: takes a position (the target of the first)
+        Post: Shows the second position as a possible option
+        if is different from the first position selected
+        and there is a piece of a different color
+        and the piece in the first position can move to the second.
+        Otherwise shows the second position as invalid.
+        """
         piece1 = self.board.piece(self.first_pos)
         piece2 = self.board.piece(second_pos)
         tile = Tile(second_pos, piece2)
@@ -294,9 +497,10 @@ class SecondMove(Move):
 
     def accept(self, second_pos):
         """
-        The second move is valid if it selected a piece of the other player
-        or is an empty space
-        and the piece can move in that pattern
+        Pre: Takes the second position of the move
+        Post: Returns a first move for the other player with
+        the board updated to reflect the new position or the piece taken if valid.
+        If the move is invalid returns the same second move instance (does nothing).
         """
         piece1 = self.board.piece(self.first_pos)
         piece2 = self.board.piece(second_pos)
@@ -319,6 +523,10 @@ class SecondMove(Move):
 
 
     def next_player(self):
+        """
+        Pre: (none)
+        Returns: White player if current player is black, black otherwise.
+        """
         if self.player == WHITE:
             return BLACK
         else:
@@ -327,11 +535,25 @@ class SecondMove(Move):
 
 
 def pos_to_tile(pos):
+    """
+    Pre: A position in pixel coordinates
+    Post: A position of the chess board using TILE_SIZE
+    to identify the row and the column
+    """
     x, y = pos
     return x // TILE_SIZE, y // TILE_SIZE
 
 
 def event_response(event, move, previous_pos):
+    """
+    Pre: Takes an event, the current move and the previous position
+    Post: Returns a pair (move, board_pos).
+    The board position is calculated based on the position of the mouse.
+    If the player presses the ESC key cancels the move going back to selection.
+    If the user selects a board tile, asks the move to accept the selection
+    and returns the updated move
+    (first move (current player) -> second move -> first move (next player) -> and so on)
+    """
 
     # Either we need to select a tile
     # Or move a piece to the tiile
@@ -352,22 +574,39 @@ def event_response(event, move, previous_pos):
     return move, bpos
 
 
-# Draws the board and the pieces
+"""
+Instance of the board
+"""
 board = Board()
 
-# Move to use for events
+"""
+Starts the white player waiting for a first move
+"""
 move = FirstMove(board, WHITE)
 
+"""
+There is no previous position
+"""
 previous_pos = None
 
+"""
+The game is starting!
+"""
 print("White pieces turn")
 
 
+"""
+Infinite loop waiting for events
+Quitting the application will stop the loop
+"""
 while 1:
+    # Small delay to avoid killing the CPU
     pygame.time.delay(50)
 
-    # Some function about events
+    # For every event
     for event in pygame.event.get():
+
+        # Quit if quitting
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
@@ -378,5 +617,6 @@ while 1:
         # Clicking on a tile when there's one selected attemps to move the piece to the target tile
         move, previous_pos = event_response(event, move, previous_pos)
 
+    # Refresh the screen
     pygame.display.flip()
 
