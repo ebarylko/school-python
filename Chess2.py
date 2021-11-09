@@ -61,6 +61,8 @@ class Piece:
         m = re.search('/(.+)\.', image_file)
         self.name = m.group(1)
         piece = pygame.image.load(image_file)
+
+        # Transform the piece to match the size of the board tile
         self.image = pygame.transform.scale(piece, (TILE_SIZE - self.MARGIN, TILE_SIZE - self.MARGIN))
         self.color = color
 
@@ -88,15 +90,18 @@ class Piece:
         diff_x = abs(x2 - x1)
         diff_y = abs(y2 - y1)
 
+        # Check for horizontal and no pieces inbetween
         if diff_x > 0 and diff_y== 0:
             a, b = sorted([x1, x2])
             return not [board.piece((x, y1)) for x in range(a + 1, b) if board.piece((x, y1))] and HORIZONTAL
 
+        # Check for vertical and no pieces inbetween
         if diff_x == 0 and diff_y > 0:
             a, b = sorted([y1, y2])
             return not [board.piece((x1, y)) for y in range(a + 1, b) if board.piece((x1, y))] and VERTICAL
 
-        sign = lambda a: (a>0) - (a<0)
+        # Check for diagonal and no pieces inbetween or return False
+        sign = lambda a: (a > 0) - (a < 0)
         x_inc = sign(x2 - x1)
         y_inc = sign(y2 - y1)
         return diff_x == diff_y and not [board.piece((x1 + i * x_inc, y1 + i * y_inc)) for i in range(1, diff_x) if board.piece((x1 + i * x_inc, y1 + i * y_inc))] and DIAGONAL
@@ -152,16 +157,7 @@ class Bishop(Piece):
         Post: Returns True if pos2 is diagonal to pos1 and there
         is no piece between them.
         """
-        x1, y1 = pos1
-        x2, y2 = pos2
-        sign = lambda a: (a>0) - (a<0)
-        x_inc = sign(x2 - x1)
-        y_inc = sign(y2 - y1)
-        diff_x = abs(x2 - x1)
-        diff_y = abs(y2 - y1)
-        in_between = [board.piece((x1 + i * x_inc, y1 + i * y_inc)) for i in range(1, diff_x) if board.piece((x1 + i * x_inc, y1 + i * y_inc))]
-
-        return diff_x == diff_y and not in_between
+        return self.not_in_between(pos1, pos2, board) == DIAGONAL
 
 
 class Queen(Piece):
@@ -190,8 +186,7 @@ class King(Piece):
         Pre: Takes start and end position and a board,
         assumes pos2 is empty or occupied by piece of
         other color
-        Post: Returns True if pos2 is one tile away
-        from pos1 
+        Post: Returns True if pos2 is one tile away from pos1.
         """
         x1, y1 = pos1
         x2, y2 = pos2
@@ -228,9 +223,9 @@ class Pawn(Piece):
             is_ahead = diff_x == 0 and (diff_y == 1 or (y1 == 1 and y2 == 3))
             is_diagonal = abs(diff_x) == 1 and diff_y == 1
 
+        # Either there is a piece of the other color in a diagonal tile
+        # or there is no piece and is ahead
         return (piece and piece.color == other and is_diagonal) or (not piece and is_ahead)
-
-
 
 
 class Board:
