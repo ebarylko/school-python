@@ -41,21 +41,66 @@ BLUE = pygame.Color(0, 0, 255)
 WHITE = pygame.Color(255, 255, 255)
 BLACK = pygame.Color(0, 0, 0)
 
-hangman_stand = [pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)]
-error_1 = pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-error_2 = pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-error_3 = pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-error_4 = pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-error_5 = pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-error_6 = pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-error_7 = pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
-error_8 = pygame.draw.line(WIN, WHITE, (495, 350), (555, 400), 5)
-   
-hangman = [error_1, error_2, error_3, error_4, error_5, error_6, error_7, error_8]    
-
+		 	
+body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10]]
 
 
 # set up the window
+
+		# if errors == 0:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# if errors == 1:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# if errors == 2:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# if errors == 3:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
+		# if errors == 4:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
+		# if errors == 5:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
+		# if errors == 6:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
+		# if errors == 7:
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
+		# if errors == 8:							
+		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
+		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
+		# 	pygame.draw.line(WIN, WHITE, (495, 350), (555, 400), 5)
 
 
 
@@ -74,10 +119,26 @@ class Label:
 		WIN.blit(self.text, (self.x, self.y))
 
 
-# class Gallow:
-	# def __init__(self, errors):
-		
+class Gallow:
+    """represents the gallow in the game"""
+    body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10]]
 
+    def __init__(self):
+        #pre: (None)
+        #post: draws the empty gallow
+        pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0)
+        pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10)
+        pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+        self.error = 0
+
+    def draw_body(self):
+        #pre: (None)
+        #post: draws body part of hangman
+        fn, *args = body_parts[self.error]
+        fn(WIN, *args)
+        self.error += 1
+
+        
 # class Word:
 	# """represents the word being drawn on the screen"""
 	# def __init__(self, word, letters_guessed):
@@ -96,7 +157,7 @@ class Guess:
 		self.guess = guess
 		self.secret_word = secret_word
     
-	def is_guess_multi_char(self):   
+	def is_word_guess(self):   
 		#pre: (None)
 		#post: returns true if guess is longer than one letter, flase otherwise
 		#return False	
@@ -113,106 +174,33 @@ class Guess:
 		#post: returns true if guess is equal to word, false otherwise
 		return self.guess == secret_word
 
-class Gallow:
-	"""represents the gallow in the game"""
-	def __init__(self, errors = 0):
-		#pre: takes number of errors
-		#post: draws the gallow corresponding with the number of errors
-		if errors == 0:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		if errors == 1:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		if errors == 2:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		if errors == 3:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		if errors == 4:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-		if errors == 5:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-		if errors == 6:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-		if errors == 7:
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
-		if errors == 8:							
-			pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-			pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-			pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-			pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
-			pygame.draw.line(WIN, WHITE, (495, 350), (555, 400), 5)
-  
+gallow = Gallow()
+gallow.draw_body()
 			
 letter = ""
 error = 0
 while error < 9:
-	pygame.time.delay(50)
+    pygame.time.delay(50)
+    #	gallow = Gallow(error)
+    #	gallow
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.unicode in alphabet:
+                letter +=  event.unicode
+            if event.key == pygame.K_RETURN:
+                #print(letter)
+                guess = Guess(letter, secret_word)
+                if guess.is_word_guess():
+                    if guess.word_guess():
+                        print("You have won")
+                    else:
+                        print("You have lost")
 
-	WIN.fill((125,125,125))
-	gallow = Gallow(error)
-	gallow
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			pygame.quit()
-			sys.exit()
-		if event.type == pygame.KEYDOWN:    
-			if event.unicode in alphabet:
-				letter +=  event.unicode
-			if event.key == pygame.K_RETURN:
-				#print(letter)
-				guess = Guess(letter, secret_word)
-				print(len(guess.guess))
-				if guess.is_guess_multi_char():
-				#else:
-					#error += 1	
-				# if guess.is_guess_multi_char:
-					# print("WHY")
-					# print(guess.guess)
-					
-					# if guess.word_guess:
-						# print("you win")
-					# else: 
-						# print("you lose")
-				# elif not guess.is_guess_multi_char:			
-					# if guess.letter_guess:
-						# print(guess.guess)
-					# else: 
-						# print("letter not in word")	
-						# error += 1		
-				letter = ""
-                #print(guess.is_valid_guess())
-	
-											
-	pygame.display.flip()
+                letter = ""
+
+    pygame.display.flip()
+
 pygame.quit()
