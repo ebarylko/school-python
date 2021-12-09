@@ -22,7 +22,7 @@ Randomly select a word from that text file that is greater than 3 letters in len
 10. Do not use an infinite loop to control your game. Instead, use the number of erroneous guesses as your loop control. Once they hit 9 errors, the game end
 """
 
-#make the screen, 
+#make the screen,
 #intro page, actual part of the game, win-screen, lose-screen, replay option
 #intro page: greet user, display rules for game, clear away once clicked
 #dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
@@ -41,8 +41,6 @@ BLUE = pygame.Color(0, 0, 255)
 WHITE = pygame.Color(255, 255, 255)
 BLACK = pygame.Color(0, 0, 0)
 
-		 	
-body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10]]
 
 
 # set up the window
@@ -91,7 +89,7 @@ body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10]]
 		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
 		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
 		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
-		# if errors == 8:							
+		# if errors == 8:
 		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
 		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
 		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
@@ -102,26 +100,43 @@ body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10]]
 		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
 		# 	pygame.draw.line(WIN, WHITE, (495, 350), (555, 400), 5)
 
+body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
+              [pygame.draw.circle, WHITE, (495, 230), 30, 5],
+              [pygame.draw.line, WHITE, (495, 260), (495, 305), 5],
+              [pygame.draw.line, WHITE, (495, 260), (495, 350), 5],
+              [pygame.draw.line, WHITE, (495, 305), (435, 305), 5],
+              [pygame.draw.line, WHITE, (495, 305), (555, 305), 5],
+              [pygame.draw.line, WHITE, (495, 350), (435, 400), 5],
+              [pygame.draw.line, WHITE, (495, 350), (555, 400), 5]
+]
 
 
-class Label:
-	def __init__(self, message, x, y, size, color = (0, 0, 0)):
-		self.x = x
-		self.y = y
-		self.colour = color
-		self.size = size
-		self.message = message
-		self.font = pygame.font.SysFont('arial', self.size)
-		
+# class Label:
+#     def __init__(self, message, x, y, size, color = (0, 0, 0)):
+# 		self.x = x
+# 		self.y = y
+# 		self.colour = color
+# 		self.size = size
+# 		self.message = message
+# 		self.font = pygame.font.SysFont('arial', self.size)
 
-	def draw(self):
-		self.text = self.font.render(self.message, True, (0, 0, 0))
-		WIN.blit(self.text, (self.x, self.y))
+
+# 	def draw(self):
+# 		self.text = self.font.render(self.message, True, (0, 0, 0))
+# 		WIN.blit(self.text, (self.x, self.y))
 
 
 class Gallow:
     """represents the gallow in the game"""
-    body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10]]
+#     body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
+#                   [pygame.draw.circle, WIN, WHITE, (495, 230), 30, 5],
+#                   [pygame.draw.line, WIN, WHITE, (495, 260), (495, 305), 5],
+#                   [pygame.draw.line, WIN, WHITE, (495, 260), (495, 350), 5],
+#                   [pygame.draw.line, WIN, WHITE, (495, 305), (435, 305), 5],
+#                   [pygame.draw.line, WIN, WHITE, (495, 305), (555, 305), 5],
+
+# [pygame.draw.line, WIN, WHITE, (495, 350), (555, 400), 5]
+#     ]
 
     def __init__(self):
         #pre: (None)
@@ -138,68 +153,98 @@ class Gallow:
         fn(WIN, *args)
         self.error += 1
 
-        
+    def hang(self):
+        #pre: (None)
+        #post: draws the full body
+        for part in body_parts:
+            fn, *args = part
+            fn(WIN, *args)
+
+
+
 # class Word:
 	# """represents the word being drawn on the screen"""
 	# def __init__(self, word, letters_guessed):
 		# #pre: takes the word and letters guessed fpr
 		# #post: draws the word with each char being an underscore
 		# #or the letter if player has guessed the letter
-		
 
 
 
 class Guess:
-	""" represents the guess in the game"""
-	def __init__(self, guess, secret_word):
-		#pre: takes a guess 
-		#post: initializes the attributes
-		self.guess = guess
-		self.secret_word = secret_word
-    
-	def is_word_guess(self):   
-		#pre: (None)
-		#post: returns true if guess is longer than one letter, flase otherwise
-		#return False	
-		return len(self.guess) > 1 
-		
+    MATCH = 1
+    LOST = 4
+    GOOD_GUESS = 8
+    BAD_GUESS = 5
+    error = 0
+    guessed_letters = ""
 
-	def letter_guess(self):
-		#pre: takes the word to guess for
-		#post: returns true if guess is in secret_word, false otherwise
-		return self.guess in secret_word
+    """ Represents the guess in the game"""
+    def __init__(self, secret_word):
+        #pre: takes a guess
+        #post: initializes the attributes
+        self.secret_word = secret_word
 
-	def word_guess(self):
-		#pre: takes the word to guess for
-		#post: returns true if guess is equal to word, false otherwise
-		return self.guess == secret_word
+    def add(self, user_input):
+        print(user_input)
+        if len(user_input) > 1:
+            if user_input == self.secret_word:
+                return self.MATCH
+            else:
+                return self.LOST
+
+        if user_input not in self.secret_word:
+            if self.error == 8:
+                return self.LOST
+            self.error += 1
+            return self.BAD_GUESS
+
+        self.guessed_letters += user_input
+
+        if len(self.guessed_letters) == len(self.secret_word):
+            return self.MATCH
+        return self.GOOD_GUESS
+
+
 
 gallow = Gallow()
 gallow.draw_body()
-			
-letter = ""
+user_input = ""
 error = 0
+guess = Guess(secret_word)
+
 while error < 9:
     pygame.time.delay(50)
-    #	gallow = Gallow(error)
-    #	gallow
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+ 
         if event.type == pygame.KEYDOWN:
             if event.unicode in alphabet:
-                letter +=  event.unicode
+                user_input +=  event.unicode
+
             if event.key == pygame.K_RETURN:
                 #print(letter)
-                guess = Guess(letter, secret_word)
-                if guess.is_word_guess():
-                    if guess.word_guess():
-                        print("You have won")
-                    else:
-                        print("You have lost")
 
-                letter = ""
+                result = guess.add(user_input)
+                user_input = ""
+                
+                if result == guess.MATCH:
+                    print("You have won")
+
+                elif result == guess.GOOD_GUESS:
+                    print("good job, Keep guessing")
+
+                elif result == guess.BAD_GUESS:
+                    gallow.draw_body()
+                    print("sorry, Keep guessing")
+
+                else:
+                    print("You have lost")
+                    gallow.hang()
+
 
     pygame.display.flip()
 
