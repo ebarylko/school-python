@@ -29,7 +29,7 @@ Randomly select a word from that text file that is greater than 3 letters in len
 secret_word = "hello"
 print(secret_word)
 #surface details
-WIN = pygame.display.set_mode((1024, 768))
+WIN = pygame.display.set_mode((1200, 768))
 pygame.display.set_caption("Hangman")
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 
@@ -100,15 +100,24 @@ BLACK = pygame.Color(0, 0, 0)
 		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
 		# 	pygame.draw.line(WIN, WHITE, (495, 350), (555, 400), 5)
 
-body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
-              [pygame.draw.circle, WHITE, (495, 230), 30, 5],
-              [pygame.draw.line, WHITE, (495, 260), (495, 305), 5],
-              [pygame.draw.line, WHITE, (495, 260), (495, 350), 5],
-              [pygame.draw.line, WHITE, (495, 305), (435, 305), 5],
-              [pygame.draw.line, WHITE, (495, 305), (555, 305), 5],
-              [pygame.draw.line, WHITE, (495, 350), (435, 400), 5],
-              [pygame.draw.line, WHITE, (495, 350), (555, 400), 5]
-]
+body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
+              [pygame.draw.circle, WHITE, (425, 230), 30, 5],
+              [pygame.draw.line, WHITE, (425, 260), (425, 305), 5],
+              [pygame.draw.line, WHITE, (425, 260), (425, 350), 5],
+              [pygame.draw.line,  WHITE, (425, 305), (365, 305), 5],
+              [pygame.draw.line, WHITE, (425, 305), (485, 305), 5],
+              [pygame.draw.line, WHITE, (425, 350), (365, 400), 5],
+              [pygame.draw.line, WHITE, (425, 350), (485, 400), 5]]
+
+# body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
+#               [pygame.draw.circle, WHITE, (495, 230), 30, 5],
+#               [pygame.draw.line, WHITE, (495, 260), (495, 305), 5],
+#               [pygame.draw.line, WHITE, (495, 260), (495, 350), 5],
+#               [pygame.draw.line, WHITE, (495, 305), (435, 305), 5],
+#               [pygame.draw.line, WHITE, (495, 305), (555, 305), 5],
+#               [pygame.draw.line, WHITE, (495, 350), (435, 400), 5],
+#               [pygame.draw.line, WHITE, (495, 350), (555, 400), 5]
+#]
 
 
 # class Label:
@@ -125,25 +134,22 @@ body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
 # 		self.text = self.font.render(self.message, True, (0, 0, 0))
 # 		WIN.blit(self.text, (self.x, self.y))
 
+def letters_in_word(word, letters):
+    check = []
+    for char in word:
+        check.append(char in letters)
+    return all(check)
+
 
 class Gallow:
     """represents the gallow in the game"""
-#     body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
-#                   [pygame.draw.circle, WIN, WHITE, (495, 230), 30, 5],
-#                   [pygame.draw.line, WIN, WHITE, (495, 260), (495, 305), 5],
-#                   [pygame.draw.line, WIN, WHITE, (495, 260), (495, 350), 5],
-#                   [pygame.draw.line, WIN, WHITE, (495, 305), (435, 305), 5],
-#                   [pygame.draw.line, WIN, WHITE, (495, 305), (555, 305), 5],
-
-# [pygame.draw.line, WIN, WHITE, (495, 350), (555, 400), 5]
-#     ]
 
     def __init__(self):
         #pre: (None)
         #post: draws the empty gallow
-        pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0)
-        pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10)
-        pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
+        pygame.draw.rect(WIN, WHITE, ((76, 500), (291, 106)), 0)
+        pygame.draw.line(WIN, BLUE, (226, 553), (226, 100 ), 10)
+        pygame.draw.line(WIN, RED, (222, 100), (430, 100), 10)
         self.error = 0
 
     def draw_body(self):
@@ -162,12 +168,34 @@ class Gallow:
 
 
 
-# class Word:
-	# """represents the word being drawn on the screen"""
-	# def __init__(self, word, letters_guessed):
-		# #pre: takes the word and letters guessed fpr
-		# #post: draws the word with each char being an underscore
-		# #or the letter if player has guessed the letter
+class Word:
+    """represents the word being drawn on the screen"""
+    def __init__(self, word, x, y, size = 40,  color = WHITE):
+        #pre: takes the word to guess for, x and y coordinates, optional coordinates for size and color
+        #post: draws the empty word on the screen, initializes attributes of word
+        self.word = word
+        self.x = x
+        self.y = y
+        self.color = color
+        self.size = size
+        empty_word = "_ " * len(self.word)
+        self.font = pygame.font.SysFont('arial', self.size)
+        self.text = self.font.render(empty_word, True, self.color)
+        WIN.blit(self.text, (self.x, self.y))
+
+
+    def update_word(self, letters_guessed):
+        #pre: takes letters guessed
+        #post: updates the word filling in the spots with guessed letters
+        new_word = ""
+        for char in self.word:
+            if char in letters_guessed:
+                new_word += char + " "
+            else:
+                new_word += "_ "
+        WIN.fill(BLACK, (420, 450, 730, 200))
+        self.text = self.font.render(new_word, True, self.color)
+        WIN.blit(self.text, (self.x, self.y))
 
 
 
@@ -176,8 +204,11 @@ class Guess:
     LOST = 4
     GOOD_GUESS = 8
     BAD_GUESS = 5
+    ERROR_LIMIT = 9
+
     error = 0
     guessed_letters = ""
+    correct_letters = ""
 
     """ Represents the guess in the game"""
     def __init__(self, secret_word):
@@ -193,26 +224,33 @@ class Guess:
             else:
                 return self.LOST
 
+        self.guessed_letters += user_input
+
         if user_input not in self.secret_word:
-            if self.error == 8:
+            if self.error == ERROR_LIMIT - 1:
                 return self.LOST
             self.error += 1
             return self.BAD_GUESS
 
-        self.guessed_letters += user_input
+        self.correct_letters += user_input
 
-        if len(self.guessed_letters) == len(self.secret_word):
+
+        if letters_in_word(self.secret_word, self.correct_letters):
             return self.MATCH
+        self.correct_letters += user_input
+        self.used_letters += user_input
         return self.GOOD_GUESS
+
 
 
 
 gallow = Gallow()
 gallow.draw_body()
+
 user_input = ""
 error = 0
 guess = Guess(secret_word)
-
+word = Word("hello", 420, 450)	
 while error < 9:
     pygame.time.delay(50)
 
@@ -220,21 +258,22 @@ while error < 9:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
- 
+
         if event.type == pygame.KEYDOWN:
             if event.unicode in alphabet:
                 user_input +=  event.unicode
 
             if event.key == pygame.K_RETURN:
-                #print(letter)
 
                 result = guess.add(user_input)
                 user_input = ""
-                
+
                 if result == guess.MATCH:
                     print("You have won")
 
                 elif result == guess.GOOD_GUESS:
+                    #letters_guessed += guess.guess
+                    word.update_word(guess.correct_letters)
                     print("good job, Keep guessing")
 
                 elif result == guess.BAD_GUESS:
