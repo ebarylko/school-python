@@ -1,32 +1,34 @@
+#This Python file uses the following encoding: utf-8
+
 #Eitan
 
 import pygame, sys, random
-pygame.init()
 from pygame.locals import *
+pygame.init()
 """
 requirements: 
 Randomly select a word from that text file that is greater than 3 letters in length. In order to get an A on this assignment, you will need to have difficulty settings such that if they choose “easy mode” they get a word that is 3-5 letters, and “hard mode” will be 6+ letters.
-
 4. Display “_” such that there is one underscore plus a space for every letter in the word selected.
-
 5. Allow the player to enter single letters in as guesses and then your program will check for occurrences of the letter guessed in the actual word. For every correct letter you must replace the “_ “with the correctly guessed letter.
-
 6. Display a list of “letters already used”
-
 7. Also allow the player to enter in a guess if they want to guess the word.
-
 8. Every wrong letter guessed results in another body part being added to the gallows.
-
 9. Every wrong word guessed automatically results in a “hanging”.
-
 10. Do not use an infinite loop to control your game. Instead, use the number of erroneous guesses as your loop control. Once they hit 9 errors, the game end
 """
 
 #make the screen,
 #intro page, actual part of the game, win-screen, lose-screen, replay option
 #intro page: greet user, display rules for game, clear away once clicked
-#dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
-secret_word = "hello"
+# dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
+
+# easy_words = list(filter((lambda word: len(word) >= 9), dictionary_words))
+# medium_words = list(filter((lambda word: len(word) >= 6 and len(word) <= 8), dictionary_words))
+# hard_words = list(filter((lambda word: len(word) >= 3 and len(word) <= 5), dictionary_words))
+
+
+# secret_word = random.choice(easy_words)
+secret_word = "magnificent"
 print(secret_word)
 #surface details
 WIN = pygame.display.set_mode((1200, 768))
@@ -45,60 +47,7 @@ BLACK = pygame.Color(0, 0, 0)
 
 # set up the window
 
-		# if errors == 0:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# if errors == 1:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# if errors == 2:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# if errors == 3:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		# if errors == 4:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-		# if errors == 5:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-		# if errors == 6:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-		# if errors == 7:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
-		# if errors == 8:
-		# 	pygame.draw.rect(WIN, WHITE, ((146, 500), (291, 106)), 0), pygame.draw.line(WIN, BLUE, (296, 553), (296, 100 ), 10), pygame.draw.line(WIN, RED, (292, 100), (500, 100), 10)
-		# 	pygame.draw.line(WIN, GREEN, (495, 95), (495, 200), 10)
-		# 	pygame.draw.circle(WIN, WHITE, (495, 230), 30, 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 260), (495, 350), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (435, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 305), (555, 305), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 350), (435, 400), 5)
-		# 	pygame.draw.line(WIN, WHITE, (495, 350), (555, 400), 5)
+	
 
 body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
               [pygame.draw.circle, WHITE, (425, 230), 30, 5],
@@ -109,16 +58,32 @@ body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
               [pygame.draw.line, WHITE, (425, 350), (365, 400), 5],
               [pygame.draw.line, WHITE, (425, 350), (485, 400), 5]]
 
-# body_parts = [[pygame.draw.line, GREEN, (495, 95), (495, 200), 10],
-#               [pygame.draw.circle, WHITE, (495, 230), 30, 5],
-#               [pygame.draw.line, WHITE, (495, 260), (495, 305), 5],
-#               [pygame.draw.line, WHITE, (495, 260), (495, 350), 5],
-#               [pygame.draw.line, WHITE, (495, 305), (435, 305), 5],
-#               [pygame.draw.line, WHITE, (495, 305), (555, 305), 5],
-#               [pygame.draw.line, WHITE, (495, 350), (435, 400), 5],
-#               [pygame.draw.line, WHITE, (495, 350), (555, 400), 5]
-#]
 
+#intro screen idea:
+# welcome to colorful hangman
+#explain rules: we're going to give you a word, and you have to guess it letter by letter or if you're confident, grab it in one go.
+#you must choose the characters and then press enter for the guess to be registered
+# for every letter error you make, a body part will be drawn. you will have a limit of eight errors, and when you reach nine you will lose
+# furthermore, if you attempt to guess the word and it is wrong, you will also lose. good luck!
+#start option below all that
+
+intro_rules = """
+welcome to colorful hangman\n,
+ we're going to give you a word, and you have to guess it letter by letter or if you're confident, grab it in one go\n 
+you must choose the characters and then press enter for the guess to be registered\n
+for every letter error you make, a body part will be drawn. you have a limit of eight errors, and the ninth will make you lose\n
+furthermore, if you attempt to guess the word and it is wrong, you will also lose. Good luck!
+"""
+
+
+
+# def intro_screen():
+# 	#pre: (None)
+# 	#post: shows the intro screen
+# 	WIN.fill(GREEN)
+# 	font = pygame.font.SysFont('arial', 30)
+# 	text = font.render(intro_rules, True, WHITE)
+# 	WIN.blit(text, (100, 100))
 
 # class Label:
 #     def __init__(self, message, x, y, size, color = (0, 0, 0)):
@@ -134,11 +99,58 @@ body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
 # 		self.text = self.font.render(self.message, True, (0, 0, 0))
 # 		WIN.blit(self.text, (self.x, self.y))
 
+
+#intro screen:
+#fill color, bright?
+#mabye call it as a function
+#background color: green, rules there
+#start button at the bottom
+#state is managed by variable, game_start?
+#if rect_collide at gamestart and click, change variable
+#move onto game state from there
+
+# def intro_screen():
+	# #pre: (None)
+	# #post: draws the intro screen
+	# WIN.fill(GREEN)
+
+# class Intro_Screen:
+	# """represents the introduction in the game"""
+#	def __init__():
+		#pre: (None)
+		#post: draws the intro screen
+		# WIN.fill(GREEN)
+		# self.title = "Welcome To Colorful Hangman"
+		# self.rules = 
+		# """
+		# we're going to give you a word, and you have to guess it letter by letter or if you're confident, grab it in one go.
+# for every letter error you make, a body part will be drawn. you will have a limit of eight errors, and when you reach nine you will lose
+# furthermore, if you attempt to guess the word and it is wrong, you will also lose. good luck!
+		# """
+		
+
+
+
+
+# def draw_error(x, y, color = WHITE, size = 40):
+	# #pre: x and y coordinates, optional color and size
+	# #post: draws the error message on the screen at position
+	# font = pygame.font.SysFont('arial', size)
+	# text = font.render("You already used this letter, use another", True, color)
+	# WIN.blit(text, (x, y))
+
+# def clear_error():
+	# #pre: (None)
+	# #post: clears the error
+	# WIN.fill(BLACK, (300, 610, 730, 50))
+
+
+
 def letters_in_word(word, letters):
-    check = []
-    for char in word:
-        check.append(char in letters)
-    return all(check)
+	check = []
+	for char in word:
+		check.append(char in letters)
+	return all(check)
 
 
 class Gallow:
@@ -166,80 +178,177 @@ class Gallow:
             fn, *args = part
             fn(WIN, *args)
 
+#make a text class?
+# in text class i have word, letters used, and error, letters_picked
+#initialilze it requires color, x, y, and size.
 
 
-class Word:
-    """represents the word being drawn on the screen"""
-    def __init__(self, word, x, y, size = 40,  color = WHITE):
-        #pre: takes the word to guess for, x and y coordinates, optional coordinates for size and color
-        #post: draws the empty word on the screen, initializes attributes of word
-        self.word = word
-        self.x = x
-        self.y = y
-        self.color = color
-        self.size = size
-        empty_word = "_ " * len(self.word)
-        self.font = pygame.font.SysFont('arial', self.size)
-        self.text = self.font.render(empty_word, True, self.color)
-        WIN.blit(self.text, (self.x, self.y))
+class Text:
+	"""represents the text on the screen"""
+	def __init__(self, x, y, size = 40, color = WHITE):
+		#pre: takes x and y position, optional size and color
+		#post: initializes attributes of the text
+		self.x = x
+		self.y = y
+		self.color = color
+		self.size = size
+		self.font = pygame.font.SysFont(None, self.size)
+		
+	def draw_word(self, word):
+		#pre: takes the word to guess for
+		#post: draws the empty word on the screen
+		self.word = word
+		empty_word = "_ " * len(self.word)
+		self.text = self.font.render(empty_word, True, self.color)
+
+		WIN.blit(self.text, (self.x, self.y))
+         
+	def update_word(self, word, correct_letters):
+		#pre: takes letters guessed and word
+		#post: updates the word filling in the spots with correct letters
+		new_word = ""
+		for char in word:
+			if char in correct_letters:
+				new_word += char + " "
+			else:
+				new_word += "_ "
+		#clear_text(self.x, self.y)
+		self.text = self.font.render(new_word, True, self.color)
+		WIN.blit(self.text, (self.x, self.y))
+		
+	def display_choice(self, choice):
+		#pre: takes the characters chosen
+		#post: draws the choice on the side of the screen
+		self.text = self.font.render(choice, True, self.color)
+		WIN.blit(self.text, (self.x, self.y))	
+        
+	def clear_text(self):
+		#pre: (None)
+		#post: clears the text at the given x and y position
+		WIN.fill(BLACK, (self.x - 10, self.y, 730, 100))
+		  
+	def used_letters(self):
+		#pre: (None)
+		#post: draws the empty used letters on the screen	  
+		self.text = self.font.render("Letters used: ", True, self.color)
+		WIN.blit(self.text, (self.x, self.y))
+        
+	def update_letters(self, guessed_letters):
+		#pre: takes guessed letters
+		#post: updates the guessed letter list
+		self.text = self.font.render(("Letters used: " + guessed_letters), True, self.color)
+		WIN.blit(self.text, (self.x, self.y))
+        
+        
+	def draw_error(self):
+		#pre: (None)
+		#post: draws error message on the screen    
+		self.text = self.font.render(("You already used this letter, use another"), True, self.color)
+		WIN.blit(self.text, (self.x, self.y))     
+        
+        
+# class Word:
+    # """represents the word being drawn on the screen"""
+    # def __init__(self, word, x, y, size = 40,  color = WHITE):
+        # #pre: takes the word to guess for, x and y coordinates, optional coordinates for size and color
+        # #post: draws the empty word on the screen, initializes attributes of word
+        # self.word = word
+        # self.x = x
+        # self.y = y
+        # self.color = color
+        # self.size = size
+        # empty_word = "_ " * len(self.word)
+        # self.font = pygame.font.SysFont('arial', self.size)
+        # self.text = self.font.render(empty_word, True, self.color)
+        # WIN.blit(self.text, (self.x, self.y))
 
 
-    def update_word(self, letters_guessed):
-        #pre: takes letters guessed
-        #post: updates the word filling in the spots with guessed letters
-        new_word = ""
-        for char in self.word:
-            if char in letters_guessed:
-                new_word += char + " "
-            else:
-                new_word += "_ "
-        WIN.fill(BLACK, (420, 450, 730, 200))
-        self.text = self.font.render(new_word, True, self.color)
-        WIN.blit(self.text, (self.x, self.y))
+    # def update_word(self, correct_letters):
+        # #pre: takes letters guessed
+        # #post: updates the word filling in the spots with correct letters
+        # new_word = ""
+        # for char in self.word:
+            # if char in correct_letters:
+                # new_word += char + " "
+            # else:
+                # new_word += "_ "
+        # WIN.fill(BLACK, (420, 450, 730, 100))
+        # self.text = self.font.render(new_word, True, self.color)
+        # WIN.blit(self.text, (self.x, self.y))
+
+
+# class Used_Letters:
+    # """represents the used_letters drawn on the screen"""
+    # def __init__(self, x, y, size = 40,  color = WHITE):
+        # #pre: takes the x and y coordinate, size, and color
+        # #post: draws the empty list of letters used
+        # self.base = "Letters used: "
+        # self.x = x
+        # self.y = y
+        # self.color = color
+        # self.size = size
+        # self.font = pygame.font.SysFont('arial', self.size)
+        # self.text = self.font.render(self.base, True, self.color)
+        # WIN.blit(self.text, (self.x, self.y))
+
+    # def update_letters(self, used_letters):
+        # #pre: takes letters guessed
+        # #post: updates the list with guessed letters
+        
+        # WIN.fill(BLACK, (420, 500, 730, 50))
+        # self.text = self.font.render((self.base + used_letters), True, self.color)
+        # WIN.blit(self.text, (self.x, self.y))
+
+
+
 
 
 
 class Guess:
-    MATCH = 1
-    LOST = 4
-    GOOD_GUESS = 8
-    BAD_GUESS = 5
-    ERROR_LIMIT = 9
+	MATCH = 1
+	LOST = 4
+	GOOD_GUESS = 8
+	BAD_GUESS = 5
+	ERROR_LIMIT = 9
+	DUPLICATE = 12
+	
+	error = 0
+	guessed_letters = ""
+	correct_letters = ""
 
-    error = 0
-    guessed_letters = ""
-    correct_letters = ""
-
-    """ Represents the guess in the game"""
-    def __init__(self, secret_word):
+	""" Represents the guess in the game"""
+	def __init__(self, secret_word):
         #pre: takes a guess
         #post: initializes the attributes
-        self.secret_word = secret_word
+		self.secret_word = secret_word
 
-    def add(self, user_input):
-        print(user_input)
-        if len(user_input) > 1:
-            if user_input == self.secret_word:
-                return self.MATCH
-            else:
-                return self.LOST
+	def add(self, user_input):
+		print(user_input)
+		if len(user_input) > 1:
+			if user_input == self.secret_word:
+				return self.MATCH
+			else:
+				return self.LOST
+		
+		if user_input in self.guessed_letters:
+			return self.DUPLICATE
+			
+		self.guessed_letters += user_input
+		
+		if user_input not in self.secret_word:
+			self.error += 1
+			if self.error == (self.ERROR_LIMIT - 1):
+				return self.LOST
+			return self.BAD_GUESS
 
-        self.guessed_letters += user_input
-
-        if user_input not in self.secret_word:
-            if self.error == ERROR_LIMIT - 1:
-                return self.LOST
-            self.error += 1
-            return self.BAD_GUESS
-
-        self.correct_letters += user_input
+		self.correct_letters += user_input
 
 
-        if letters_in_word(self.secret_word, self.correct_letters):
-            return self.MATCH
-        self.correct_letters += user_input
-        self.used_letters += user_input
-        return self.GOOD_GUESS
+		if letters_in_word(self.secret_word, self.correct_letters):
+			return self.MATCH
+		#self.correct_letters += user_input
+		#self.guessed_letters += user_input
+		return self.GOOD_GUESS
 
 
 
@@ -250,41 +359,68 @@ gallow.draw_body()
 user_input = ""
 error = 0
 guess = Guess(secret_word)
-word = Word("hello", 420, 450)	
+#word = Word(secret_word, 420, 450)	
+word = Text(420, 450)#.draw_word(secret_word)
+word.draw_word(secret_word)
+#used_list = Used_Letters(420, 550)
+used_list = Text(420, 550)#.used_letters()
+used_list.used_letters()
+char_selection = Text(600, 200)
+
+#intro_screen()
+
 while error < 9:
-    pygame.time.delay(50)
+	pygame.time.delay(50)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.quit()
+			sys.exit()
 
-        if event.type == pygame.KEYDOWN:
-            if event.unicode in alphabet:
-                user_input +=  event.unicode
+		if event.type == pygame.KEYDOWN:
+			if event.unicode in alphabet:
+				user_input += event.unicode
+			if event.key == pygame.K_BACKSPACE:
+				user_input = user_input[0:-1]
+				char_selection.clear_text()		
+			char_selection.display_choice(user_input)
 
-            if event.key == pygame.K_RETURN:
+			if event.key == pygame.K_RETURN:
+				char_selection.clear_text()
+				Text(310, 610).clear_text()
+				result = guess.add(user_input)
+				user_input = ""
 
-                result = guess.add(user_input)
-                user_input = ""
+				if result == guess.MATCH:
+					word.clear_text()
+					word.update_word(secret_word, secret_word)
+					print("You have won")
+					
+				
+				elif result == guess.DUPLICATE:
+					Text(300, 610).draw_error()
+					print("You already used this letter, use another")
+				 
+				
+				elif result == guess.GOOD_GUESS:
+					word.clear_text()
+					used_list.clear_text()
+					word.update_word(secret_word, guess.correct_letters)
+					used_list.update_letters(guess.guessed_letters)
+					print("good job, Keep guessing")
 
-                if result == guess.MATCH:
-                    print("You have won")
+				elif result == guess.BAD_GUESS:
+					gallow.draw_body()
+					used_list.clear_text()
+					used_list.update_letters(guess.guessed_letters)
+					print("sorry, Keep guessing")
 
-                elif result == guess.GOOD_GUESS:
-                    #letters_guessed += guess.guess
-                    word.update_word(guess.correct_letters)
-                    print("good job, Keep guessing")
-
-                elif result == guess.BAD_GUESS:
-                    gallow.draw_body()
-                    print("sorry, Keep guessing")
-
-                else:
-                    print("You have lost")
-                    gallow.hang()
+				else:
+					print("You have lost")
+					gallow.hang()
+					
 
 
-    pygame.display.flip()
+	pygame.display.flip()
 
 pygame.quit()
