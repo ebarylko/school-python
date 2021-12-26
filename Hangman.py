@@ -42,9 +42,11 @@ RED = pygame.Color(255, 0, 0)
 BLUE = pygame.Color(0, 0, 255)
 WHITE = pygame.Color(255, 255, 255)
 BLACK = pygame.Color(0, 0, 0)
-
-
-
+POWDER_BLUE = pygame.Color("#9AD4D6")
+OXFORD_BLUE = pygame.Color("#101935")
+CYBER_GRAPE = pygame.Color("#564787")
+LANGUID_LAVENDER = pygame.Color("#DBCBD8")
+AZURE_WHITE = pygame.Color("#F2FDFF")
 # set up the window
 
 	
@@ -67,84 +69,79 @@ body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
 # furthermore, if you attempt to guess the word and it is wrong, you will also lose. good luck!
 #start option below all that
 
-intro_rules = """
-welcome to colorful hangman\n,
- we're going to give you a word, and you have to guess it letter by letter or if you're confident, grab it in one go\n 
-you must choose the characters and then press enter for the guess to be registered\n
-for every letter error you make, a body part will be drawn. you have a limit of eight errors, and the ninth will make you lose\n
-furthermore, if you attempt to guess the word and it is wrong, you will also lose. Good luck!
-"""
+FONT = pygame.font.SysFont('arial', 20)
+
+class Screen:
+    """represents the base screen"""
+    def handle_event(event):
+        """
+        handles the event and returns the next screen if it changes
+        pre: event
+        post: returns the screen to handle the next event
+        """
+        return self
+
+
+class IntroScreen(Screen):
+    """Represents the screen to start the game"""
+
+    rules =  """
+    Welcome to colorful hangman
+     we're going to give you a word, and you have to guess it letter by letter
+     or if you're confident , grab it in one go 
+     you must choose the characters and then press enter for the guess to be registered
+     for every letter error you make, a body part will be drawn.
+      you have a limit of eight errors, and the ninth will make you lose 
+     furthermore, if you attempt to guess the word and it is wrong, you will also lose
+     Good luck!"""
 
 
 
-# def intro_screen():
-# 	#pre: (None)
-# 	#post: shows the intro screen
-# 	WIN.fill(GREEN)
-# 	font = pygame.font.SysFont('arial', 30)
-# 	text = font.render(intro_rules, True, WHITE)
-# 	WIN.blit(text, (100, 100))
+    def __init__(self):
+        WIN.fill(POWDER_BLUE)
+        x, y = 100, 100
+        for line in self.rules.splitlines():
+            text = FONT.render(line.strip(), True, OXFORD_BLUE)
+            WIN.blit(text, (x, y))
+            y += 50
+        self.button = Button(100, y, "START")
 
-# class Label:
-#     def __init__(self, message, x, y, size, color = (0, 0, 0)):
-# 		self.x = x
-# 		self.y = y
-# 		self.colour = color
-# 		self.size = size
-# 		self.message = message
-# 		self.font = pygame.font.SysFont('arial', self.size)
+    def handle_event(self, event):
+       self.button.draw_button()
+       return self
 
 
-# 	def draw(self):
-# 		self.text = self.font.render(self.message, True, (0, 0, 0))
-# 		WIN.blit(self.text, (self.x, self.y))
+class Button:
+    """represents the button used in game"""
+    def __init__(self, x, y, text):
+        #pre: takes the x and y coordinates, and text
+        #post: creates the button at position with given text
+        self.x = x
+        self.y = y
+        self.font = pygame.font.SysFont(None, 80)
+        width, height = self.font.size(text)
+        self.text = text
+        self.rect = pygame.Rect(self.x, self.y, width + 30, height + 30)
+        self.draw_button()
 
+    def draw_button(self):
+        #pre: (None)
+        #post: draws the button two different ways depending on cursor position
+        bkg = CYBER_GRAPE
+        pos = pygame.mouse.get_pos()
+        self.hover = self.rect.collidepoint(pos)
+        if self.hover:
+            bkg = LANGUID_LAVENDER
 
-#intro screen:
-#fill color, bright?
-#mabye call it as a function
-#background color: green, rules there
-#start button at the bottom
-#state is managed by variable, game_start?
-#if rect_collide at gamestart and click, change variable
-#move onto game state from there
+        text = self.font.render(self.text , True, AZURE_WHITE, bkg)
+        WIN.blit(text, self.rect)
+            
 
-# def intro_screen():
-	# #pre: (None)
-	# #post: draws the intro screen
-	# WIN.fill(GREEN)
-
-# class Intro_Screen:
-	# """represents the introduction in the game"""
-#	def __init__():
-		#pre: (None)
-		#post: draws the intro screen
-		# WIN.fill(GREEN)
-		# self.title = "Welcome To Colorful Hangman"
-		# self.rules = 
-		# """
-		# we're going to give you a word, and you have to guess it letter by letter or if you're confident, grab it in one go.
-# for every letter error you make, a body part will be drawn. you will have a limit of eight errors, and when you reach nine you will lose
-# furthermore, if you attempt to guess the word and it is wrong, you will also lose. good luck!
-		# """
-		
-
-
-
-
-# def draw_error(x, y, color = WHITE, size = 40):
-	# #pre: x and y coordinates, optional color and size
-	# #post: draws the error message on the screen at position
-	# font = pygame.font.SysFont('arial', size)
-	# text = font.render("You already used this letter, use another", True, color)
-	# WIN.blit(text, (x, y))
-
-# def clear_error():
-	# #pre: (None)
-	# #post: clears the error
-	# WIN.fill(BLACK, (300, 610, 730, 50))
-
-
+    def is_clicked(self):
+        #pre: (None)
+        #post: returns true if the button is being clicked
+        clicked = pygame.mouse.get_pressed()[0] == 1
+        return clicked and self.hover
 
 def letters_in_word(word, letters):
 	check = []
@@ -199,9 +196,9 @@ class Text:
 		#post: draws the empty word on the screen
 		self.word = word
 		empty_word = "_ " * len(self.word)
-		self.text = self.font.render(empty_word, True, self.color)
+		text = self.font.render(empty_word, True, self.color)
 
-		WIN.blit(self.text, (self.x, self.y))
+		WIN.blit(text, (self.x, self.y))
          
 	def update_word(self, word, correct_letters):
 		#pre: takes letters guessed and word
@@ -352,7 +349,7 @@ class Guess:
 
 
 
-
+WIN.fill(BLACK)
 gallow = Gallow()
 gallow.draw_body()
 
@@ -367,60 +364,64 @@ used_list = Text(420, 550)#.used_letters()
 used_list.used_letters()
 char_selection = Text(600, 200)
 
-#intro_screen()
-
+screen = IntroScreen()
 while error < 9:
-	pygame.time.delay(50)
+    pygame.time.delay(50)
 
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			pygame.quit()
-			sys.exit()
+    # start.draw_button()
+    # if start.is_clicked():
+    #     print("Hello")
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
 
-		if event.type == pygame.KEYDOWN:
-			if event.unicode in alphabet:
-				user_input += event.unicode
-			if event.key == pygame.K_BACKSPACE:
-				user_input = user_input[0:-1]
-				char_selection.clear_text()		
-			char_selection.display_choice(user_input)
+        screen = screen.handle_event(event)    
 
-			if event.key == pygame.K_RETURN:
-				char_selection.clear_text()
-				Text(310, 610).clear_text()
-				result = guess.add(user_input)
-				user_input = ""
+        # if event.type == pygame.KEYDOWN:
+        #     if event.unicode in alphabet:
+        #         user_input += event.unicode
+        #     if event.key == pygame.K_BACKSPACE:
+        #         user_input = user_input[0:-1]
+        #         char_selection.clear_text()		
+        #         char_selection.display_choice(user_input)
 
-				if result == guess.MATCH:
-					word.clear_text()
-					word.update_word(secret_word, secret_word)
-					print("You have won")
-					
+        #     if event.key == pygame.K_RETURN:
+        #         char_selection.clear_text()
+        #         Text(310, 610).clear_text()
+        #         result = guess.add(user_input)
+        #         user_input = ""
+
+        #         if result == guess.MATCH:
+        #             word.clear_text()
+        #             word.update_word(secret_word, secret_word)
+        #             print("You have won")
+                    
 				
-				elif result == guess.DUPLICATE:
-					Text(300, 610).draw_error()
-					print("You already used this letter, use another")
-				 
+        #         elif result == guess.DUPLICATE:
+        #             Text(300, 610).draw_error()
+        #             print("You already used this letter, use another")
+                 
 				
-				elif result == guess.GOOD_GUESS:
-					word.clear_text()
-					used_list.clear_text()
-					word.update_word(secret_word, guess.correct_letters)
-					used_list.update_letters(guess.guessed_letters)
-					print("good job, Keep guessing")
+        #         elif result == guess.GOOD_GUESS:
+        #             word.clear_text()
+        #             used_list.clear_text()
+        #             word.update_word(secret_word, guess.correct_letters)
+        #             used_list.update_letters(guess.guessed_letters)
+        #             print("good job, Keep guessing")
 
-				elif result == guess.BAD_GUESS:
-					gallow.draw_body()
-					used_list.clear_text()
-					used_list.update_letters(guess.guessed_letters)
-					print("sorry, Keep guessing")
+        #         elif result == guess.BAD_GUESS:
+        #             gallow.draw_body()
+        #             used_list.clear_text()
+        #             used_list.update_letters(guess.guessed_letters)
+        #             print("sorry, Keep guessing")
 
-				else:
-					print("You have lost")
-					gallow.hang()
-					
+        #         else:
+        #             print("You have lost")
+        #             gallow.hang()
+                    
 
 
-	pygame.display.flip()
+    pygame.display.flip()
 
 pygame.quit()
