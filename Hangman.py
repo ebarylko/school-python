@@ -17,18 +17,21 @@ Randomly select a word from that text file that is greater than 3 letters in len
 10. Do not use an infinite loop to control your game. Instead, use the number of erroneous guesses as your loop control. Once they hit 9 errors, the game end
 """
 
+#difficulty levels
+EASY = 1
+MEDIUM = 2
+HARD = 4
+
+
+dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
+
+easy_words = list(filter((lambda word: len(word) >= 9), dictionary_words))
+medium_words = list(filter((lambda word: len(word) >= 6 and len(word) <= 8), dictionary_words))
+hard_words = list(filter((lambda word: len(word) >= 3 and len(word) <= 5), dictionary_words))
+
 #make the screen,
-#intro page, actual part of the game, win-screen, lose-screen, replay option
-#intro page: greet user, display rules for game, clear away once clicked
-# dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
 
-# easy_words = list(filter((lambda word: len(word) >= 9), dictionary_words))
-# medium_words = list(filter((lambda word: len(word) >= 6 and len(word) <= 8), dictionary_words))
-# hard_words = list(filter((lambda word: len(word) >= 3 and len(word) <= 5), dictionary_words))
-
-
-# secret_word = random.choice(easy_words)
-secret_word = "magnificent"
+#secret_word = "magnificent"
 print(secret_word)
 #surface details
 WIN = pygame.display.set_mode((1200, 768))
@@ -73,7 +76,7 @@ FONT = pygame.font.SysFont('arial', 20)
 
 class Screen:
     """represents the base screen"""
-    def handle_event(event):
+    def handle_event(self, event):
         """
         handles the event and returns the next screen if it changes
         pre: event
@@ -108,12 +111,104 @@ class IntroScreen(Screen):
 
     def handle_event(self, event):
        self.button.draw_button()
+       if self.button.is_clicked():
+           return ConfigScreen()
+
        return self
 
 
+class ConfigScreen(Screen):
+    """represents the difficulty selection screen"""
+    def __init__(self):
+        WIN.fill(POWDER_BLUE)
+        self.easy = Button(100, 100, "Easy", EASY)
+        self.medium = Button(100, 200, "Medium", MEDIUM)
+        self.hard = Button(100, 300, "Hard", HARD)
+
+
+    def handle_event(self, event):
+        """
+        pre: takes an event
+        post: selects the difficulty
+        """
+        buttons = [self.easy, self.medium, self.hard]
+        for b in buttons:
+            b.draw_button()
+
+
+        selected = [b for b in buttons if b.is_clicked()]
+
+        if selected:
+            return GameScreen(selected)
+
+        return self 
+
+
+class GameScreen(Screen):
+    """
+    Represents the game
+    """
+
+    def __init__(self, difficulty):
+        """
+        pre: Takes difficulty selected
+        post: Initializes the game screen components: Gallow, UserInput, UsedLetters and WordGuess
+        """
+        WIN.fill(BLACK)
+        self.error_count = 0
+        self.gallow = Gallow()
+        self.user_input = UserInput()
+        self.word_guess = Text(420, 450)
+        self.used_list = Text(420, 550)
+        word.draw_word(secret_word)
+
+
+    def handle_event(self, event):
+        """
+        pre: takes an event
+        post: decide
+        """
+        guess = user_input.handle_event(event)
+
+        if not guess:
+           return self
+
+        match = guess.matches(self.secret_word)
+
+        if match == LOST_MATCH:
+            return LoseScreen(guess.guess, self.secret_word)
+
+        if match == FULL_MATCH:
+            return WinScreen(self.secret_word)
+
+        if match == PARTIAL_MATCH:
+           self.word.update_word(self.secret_word, guess.letter)
+           return self
+
+        if self.error_count == 8:
+            return LoseScreen(guess.guess, self.secret_word)
+
+        used_list.add_letter(guess.guess)
+
+        self.error_count += 1
+
+        return self
+
+
+class UserInput:
+    """represents the user input(letter, word) in the game"""
+    user_input = ""
+    
+    def __init__():
+        """
+        pre: (None)
+        post: initializes the input so far as empty
+        """
+        
+        
 class Button:
     """represents the button used in game"""
-    def __init__(self, x, y, text):
+    def __init__(self, x, y, text, clicked = True):
         #pre: takes the x and y coordinates, and text
         #post: creates the button at position with given text
         self.x = x
@@ -123,6 +218,7 @@ class Button:
         self.text = text
         self.rect = pygame.Rect(self.x, self.y, width + 30, height + 30)
         self.draw_button()
+        self.clicked = clicked
 
     def draw_button(self):
         #pre: (None)
@@ -135,13 +231,13 @@ class Button:
 
         text = self.font.render(self.text , True, AZURE_WHITE, bkg)
         WIN.blit(text, self.rect)
-            
+
 
     def is_clicked(self):
         #pre: (None)
         #post: returns true if the button is being clicked
-        clicked = pygame.mouse.get_pressed()[0] == 1
-        return clicked and self.hover
+        pressed = pygame.mouse.get_pressed()[0] == 1
+        return pressed and self.hover and self.clicked
 
 def letters_in_word(word, letters):
 	check = []
@@ -327,7 +423,8 @@ class Guess:
 			else:
 				return self.LOST
 		
-		if user_input in self.guessed_letters:
+
+            if user_input in self.guessed_letters:
 			return self.DUPLICATE
 			
 		self.guessed_letters += user_input
