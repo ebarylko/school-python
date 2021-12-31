@@ -1,0 +1,25 @@
+digraph "classes" {
+rankdir=BT
+charset="utf-8"
+"Hangman.Button" [color="black", fontcolor="black", label="{Button|clicked : bool\lfont : Font\lhover\lrect\ltext\lx\ly\l|draw_button()\lis_clicked()\l}", shape="record", style="solid"];
+"Hangman.ConfigScreen" [color="black", fontcolor="black", label="{ConfigScreen|easy\lhard\lmedium\l|handle_event(event)\l}", shape="record", style="solid"];
+"Hangman.Gallow" [color="black", fontcolor="black", label="{Gallow|error : int\l|draw_body()\lhang()\l}", shape="record", style="solid"];
+"Hangman.GameScreen" [color="black", fontcolor="black", label="{GameScreen|dictionary_words\ldifficulty_word : dict\leasy_words : list\lerror_count : int\lgallow\lhard_words : list\lmedium_words : list\lsecret_word\lused_list : NoneType\luser_input\lword_guess\l|handle_event(event)\l}", shape="record", style="solid"];
+"Hangman.IntroScreen" [color="black", fontcolor="black", label="{IntroScreen|button\lrules : str\l|handle_event(event)\l}", shape="record", style="solid"];
+"Hangman.LetterGuess" [color="black", fontcolor="black", label="{LetterGuess|guess\l|matches(secret_word)\l}", shape="record", style="solid"];
+"Hangman.Screen" [color="black", fontcolor="black", label="{Screen|\l|handle_event(event)\l}", shape="record", style="solid"];
+"Hangman.Text" [color="black", fontcolor="black", label="{Text|color\lfont : Font\lsize : int\ltext\lword\lx\ly\l|clear_text()\ldisplay_choice(choice)\ldraw_error()\ldraw_word(word)\lupdate_letters(guessed_letters)\lupdate_word(word, correct_letters)\lused_letters()\l}", shape="record", style="solid"];
+"Hangman.UserInput" [color="black", fontcolor="black", label="{UserInput|char_selection\luser_input : str\luser_input : str\l|handle_event(event)\l}", shape="record", style="solid"];
+"Hangman.WordGuess" [color="black", fontcolor="black", label="{WordGuess|guess\l|matches(secret_word)\l}", shape="record", style="solid"];
+"Hangman.ConfigScreen" -> "Hangman.Screen" [arrowhead="empty", arrowtail="none"];
+"Hangman.GameScreen" -> "Hangman.Screen" [arrowhead="empty", arrowtail="none"];
+"Hangman.IntroScreen" -> "Hangman.Screen" [arrowhead="empty", arrowtail="none"];
+"Hangman.Button" -> "Hangman.ConfigScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="easy", style="solid"];
+"Hangman.Button" -> "Hangman.ConfigScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="medium", style="solid"];
+"Hangman.Button" -> "Hangman.ConfigScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="hard", style="solid"];
+"Hangman.Button" -> "Hangman.IntroScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="button", style="solid"];
+"Hangman.Gallow" -> "Hangman.GameScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="gallow", style="solid"];
+"Hangman.Text" -> "Hangman.GameScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="word_guess", style="solid"];
+"Hangman.Text" -> "Hangman.UserInput" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="char_selection", style="solid"];
+"Hangman.UserInput" -> "Hangman.GameScreen" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="user_input", style="solid"];
+}

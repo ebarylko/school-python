@@ -1,0 +1,88 @@
+@startuml classes
+set namespaceSeparator none
+class "Button" as Hangman.Button #aliceblue {
+  clicked : bool
+  font : Font
+  hover
+  rect
+  text
+  x
+  y
+  draw_button()
+  is_clicked()
+}
+class "ConfigScreen" as Hangman.ConfigScreen #aliceblue {
+  easy
+  hard
+  medium
+  handle_event(event)
+}
+class "Gallow" as Hangman.Gallow #aliceblue {
+  error : int
+  draw_body()
+  hang()
+}
+class "GameScreen" as Hangman.GameScreen #aliceblue {
+  dictionary_words
+  difficulty_word : dict
+  easy_words : list
+  error_count : int
+  gallow
+  hard_words : list
+  medium_words : list
+  secret_word
+  used_list : NoneType
+  user_input
+  word_guess
+  handle_event(event)
+}
+class "IntroScreen" as Hangman.IntroScreen #aliceblue {
+  button
+  rules : str
+  handle_event(event)
+}
+class "LetterGuess" as Hangman.LetterGuess #aliceblue {
+  guess
+  matches(secret_word)
+}
+class "Screen" as Hangman.Screen #aliceblue {
+  handle_event(event)
+}
+class "Text" as Hangman.Text #aliceblue {
+  color
+  font : Font
+  size : int
+  text
+  word
+  x
+  y
+  clear_text()
+  display_choice(choice)
+  draw_error()
+  draw_word(word)
+  update_letters(guessed_letters)
+  update_word(word, correct_letters)
+  used_letters()
+}
+class "UserInput" as Hangman.UserInput #aliceblue {
+  char_selection
+  user_input : str
+  user_input : str
+  handle_event(event)
+}
+class "WordGuess" as Hangman.WordGuess #aliceblue {
+  guess
+  matches(secret_word)
+}
+Hangman.ConfigScreen --|> Hangman.Screen
+Hangman.GameScreen --|> Hangman.Screen
+Hangman.IntroScreen --|> Hangman.Screen
+Hangman.Button --* Hangman.ConfigScreen : easy
+Hangman.Button --* Hangman.ConfigScreen : medium
+Hangman.Button --* Hangman.ConfigScreen : hard
+Hangman.Button --* Hangman.IntroScreen : button
+Hangman.Gallow --* Hangman.GameScreen : gallow
+Hangman.Text --* Hangman.GameScreen : word_guess
+Hangman.Text --* Hangman.UserInput : char_selection
+Hangman.UserInput --* Hangman.GameScreen : user_input
+@enduml
