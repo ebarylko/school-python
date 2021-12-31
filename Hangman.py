@@ -321,7 +321,7 @@ class Word:
     """
     Represents the word guessed for in the game
     """
-    font = pygame.font.SysFont("spacemono", 20)
+    font = pygame.font.SysFont("spacemono", 40)
 
     def __init__(self, word, x = 420, y = 450 ):
         """
@@ -336,7 +336,8 @@ class Word:
         for (i, c) in enumerate(word):
             self.freq[c] = self.freq.get(c, []) + [i]
 
-        self.size = self.font.size(self.secret_word)
+        self.width, self.height = self.font.size(self.secret_word * 2)
+
         self.guess = ['_' for c in word]
         self.draw(self.guess)
 
@@ -360,7 +361,7 @@ class Word:
         """
         print("The new word", new_word)
         pos = (self.x, self.y)
-        WIN.fill(BLACK, pygame.Rect(pos, self.size))
+        WIN.fill(BLACK, pygame.Rect(self.x - 10, self.y - 10, self.width + 10, self.height + 10))
         with_spaces = "".join([c + ' ' for c in new_word])
         text = self.font.render(with_spaces, True, WHITE)
         WIN.blit(text, pos)
