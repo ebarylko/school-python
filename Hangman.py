@@ -51,6 +51,20 @@ body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
               [pygame.draw.line, WHITE, (425, 350), (485, 400), 5]]
 
 
+
+def render_text(message, color, x = 100, y  = 100):
+    """
+    pre: takes a message, color, and a set of coordinates
+    post: displays the text on the screen and returns the y coordinate after the text
+    """
+    for line in message.splitlines():
+        text = FONT.render(line.strip(), True, color)
+        WIN.blit(text, (x, y))
+        y += 50
+
+    return y 
+
+
 class Text:
     """represents the text on the screen"""
     def __init__(self, x, y, size = 40, color = WHITE):
@@ -180,11 +194,7 @@ class IntroScreen(Screen):
         post: displays the intro screen
         """
         WIN.fill(POWDER_BLUE)
-        x, y = 100, 100
-        for line in self.rules.splitlines():
-            text = FONT.render(line.strip(), True, OXFORD_BLUE)
-            WIN.blit(text, (x, y))
-            y += 50
+        y = render_text(self.rules, OXFORD_BLUE)
         self.button = Button(100, y, "START")
 
     def handle_event(self, event):
@@ -313,7 +323,38 @@ class GameScreen(Screen):
         return self
 
 
-class EndScreen(Screen): pass
+class EndScreen(Screen):
+
+    def __init__(self, background, message):
+        """
+        pre: takes the erroneous guess(letter/word) and the secret_word
+        post: displays the lose screen
+        """
+        WIN.fill(background)
+
+        self.restart = Button(100, 400, "Restart")
+        self.quit = Button(100, 470, "Quit")
+        self.buttons = [self.restart, self.quit]
+
+        render_text(message, WHITE)
+
+
+    def handle_event(self, event):
+        """
+        pre: takes an event
+        post: returns user to difficulty screen if restart is clicked, returns none if quit is clicked, returns self otherwise
+        """
+        for b in self.buttons:
+            b.draw_button()
+
+        if self.restart.is_clicked():
+            return ConfigScreen()
+
+        if self.quit.is_clicked():
+            return None
+
+        return self
+
 
 class LoseScreen(EndScreen):
     """
@@ -335,44 +376,19 @@ class LoseScreen(EndScreen):
         click the 'Restart' button if you want to play again, and 'Quit' to exit
     """
 
-
     def __init__(self, guess, secret_word):
         """
         pre: takes the erroneous guess(letter/word) and the secret_word
         post: displays the lose screen
         """
-        WIN.fill(RED)
-        self.restart = Button(100, 400, "Restart")
-        self.quit = Button(100, 470, "Quit")
-        self.buttons = [self.restart, self.quit]
+        lose_message = self.too_many_errors.format(secret_word)
 
         if len(guess) > 1:
             lose_message = self.wrong_word.format(guess, secret_word)
-        else:
-            lose_message = self.too_many_errors.format(secret_word)
 
-        x, y = 100, 100    
-        for line in lose_message.splitlines():
-            message = FONT.render(line.strip(), True, WHITE)
-            WIN.blit(message, (x, y))
-            y += 50
+        super().__init__(RED, lose_message)
 
 
-    def handle_event(self, event):
-        """
-        pre: takes an event
-        post: returns user to difficulty screen if restart is clicked, returns none if quit is clicked, returns self otherwise
-        """
-        for b in self.buttons:
-            b.draw_button()
-
-        if self.restart.is_clicked():
-            return ConfigScreen()
-
-        if self.quit.is_clicked():
-            return None
-
-        return self
 
 
 class WinScreen(EndScreen):
@@ -391,35 +407,9 @@ class WinScreen(EndScreen):
         pre: takes the secret_word
         post: displays the win screen
         """
-        WIN.fill(RUSSIAN_GREEN)
-        self.restart = Button(100, 400, "Restart")
-        self.quit = Button(100, 470, "Quit")
-        self.buttons = [self.restart, self.quit]
-
         win_message = self.win_text.format(secret_word)
+        super().__init__(RUSSIAN_GREEN, win_message)
 
-        x, y = 100, 100    
-        for line in win_message.splitlines():
-            message = FONT.render(line.strip(), True, WHITE)
-            WIN.blit(message, (x, y))
-            y += 50
-
-
-    def handle_event(self, _):
-        """
-        pre: takes an event
-        post: returns user to difficulty screen if restart is clicked, returns none if quit is clicked, returns self otherwise
-        """
-        for b in self.buttons:
-            b.draw_button()
-
-        if self.restart.is_clicked():
-            return ConfigScreen()
-
-        if self.quit.is_clicked():
-            return None
-
-        return self
 
 
 class UsedLetters:
