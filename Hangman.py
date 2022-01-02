@@ -41,9 +41,6 @@ FONT = pygame.font.SysFont(None, 30)
 WIN = pygame.display.set_mode((1200, 768))
 pygame.display.set_caption("Hangman")
 
-
-#alphabet = "abcdefghijklmnopqrstuvwxyz"
-
 body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
               [pygame.draw.circle, WHITE, (425, 230), 30, 5],
               [pygame.draw.line, WHITE, (425, 260), (425, 305), 5],
@@ -57,71 +54,41 @@ body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
 class Text:
     """represents the text on the screen"""
     def __init__(self, x, y, size = 40, color = WHITE):
-		#pre: takes x and y position, optional size and color
-		#post: initializes attributes of the text
+        """
+        pre: takes x and y position, optional size and color
+		post: initializes attributes of the text
+        """ 
+
         self.x = x
         self.y = y
         self.color = color
         self.size = size
         self.font = pygame.font.SysFont(None, self.size)
 
-    def draw_word(self, word):
-		#pre: takes the word to guess for
-		#post: draws the empty word on the screen
-        self.word = word
-        empty_word = "_ " * len(self.word)
-        text = self.font.render(empty_word, True, self.color)
-
-        WIN.blit(text, (self.x, self.y))
-
-    def update_word(self, word, correct_letters):
-		#pre: takes letters guessed and word
-		#post: updates the word filling in the spots with correct letters
-        new_word = ""
-        for char in word:
-            if char in correct_letters:
-                new_word += char + " "
-            else:
-                new_word += "_ "
-        #clear_text(self.x, self.y)
-        self.text = self.font.render(new_word, True, OXFORD_BLUE)
-        WIN.blit(self.text, (self.x, self.y))
         
     def display_choice(self, choice):
-        #pre: takes the characters chosen
-        #post: draws the choice on the side of the screen
+        """
+        pre: takes the characters chosen
+        post: draws the choice on the side of the screen
+        """
         self.text = self.font.render(choice, True, self.color)
         WIN.blit(self.text, (self.x, self.y))	
         
     def clear_text(self):
-        #pre: (None)
-        #post: clears the text at the given x and y position
+        """
+         pre: (None)
+        post: clears the text at the given x and y position
+        """
         WIN.fill(OXFORD_BLUE, (self.x - 10, self.y, 730, 100))
           
-    def used_letters(self):
-        #pre: (None)
-        #post: draws the empty used letters on the screen	  
-        self.text = self.font.render("Letters used: ", True, self.color)
-        WIN.blit(self.text, (self.x, self.y))
-        
-    def update_letters(self, guessed_letters):
-        #pre: takes guessed letters
-        #post: updates the guessed letter list
-        self.text = self.font.render(("Letters used: " + guessed_letters), True, self.color)
-        WIN.blit(self.text, (self.x, self.y))
-        
-        
-    def draw_error(self):
-        #pre: (None)
-        #post: draws error message on the screen    
-        self.text = self.font.render(("You already used this letter, use another"), True, self.color)
-        WIN.blit(self.text, (self.x, self.y))     
-        
 
 
 def draw_error(letter, x = 330, y = 620 ,):
-    #pre: takes x and y coordinates, letter
-    #post: draws error message on the screen    
+    """
+     pre: takes x and y coordinates, letter
+    post: draws error message on the screen    
+    """
+
     text = FONT.render(("You already used {0}, please use another letter".format(letter)), True, RED)
     WIN.blit(text , (x, y))     
 
@@ -131,14 +98,18 @@ def clear_error(x= 330, y = 620):
     pre: takes x and y coordinates
     post: clears the error message from the screen
     """
+
     WIN.fill(OXFORD_BLUE, (x - 10, y - 10, 730, 100))
 
 
 class Button:
     """represents the button used in game"""
     def __init__(self, x_coord, y_coord, text, clicked = True):
-        #pre: takes the x and y coordinates, and text
-        #post: creates the button at position with given text
+        """
+         pre: takes the x and y coordinates, and text
+        post: creates the button at position with given text
+        """
+       
         self.x = x_coord
         self.y = y_coord
         self.font = pygame.font.SysFont(None, 80)
@@ -149,8 +120,11 @@ class Button:
         self.clicked = clicked
 
     def draw_button(self):
-        #pre: (None)
-        #post: draws the button two different ways depending on cursor position
+        """
+         pre: (None)
+        post: draws the button two different ways depending on cursor position
+        """
+
         bkg = CYBER_GRAPE
         pos = pygame.mouse.get_pos()
         self.hover = self.rect.collidepoint(pos)
@@ -162,8 +136,11 @@ class Button:
 
 
     def is_clicked(self):
-        #pre: (None)
-        #post: returns true if the button is being clicked
+        """
+         pre: (None)
+        post: returns true if the button is being clicked
+        """
+
         pressed = pygame.mouse.get_pressed()[0] == 1
         return pressed and self.hover and self.clicked
 
@@ -198,6 +175,10 @@ class IntroScreen(Screen):
 
 
     def __init__(self):
+        """
+        pre: (None)
+        post: displays the intro screen
+        """
         WIN.fill(POWDER_BLUE)
         x, y = 100, 100
         for line in self.rules.splitlines():
@@ -207,6 +188,10 @@ class IntroScreen(Screen):
         self.button = Button(100, y, "START")
 
     def handle_event(self, event):
+        """
+        pre: takes an event
+        post: returns ConfigScreen if user wants  to start playing, otherwise the same intro screen
+        """
         self.button.draw_button()
         if self.button.is_clicked():
             return ConfigScreen()
@@ -217,6 +202,11 @@ class IntroScreen(Screen):
 class ConfigScreen(Screen):
     """represents the difficulty selection screen"""
     def __init__(self):
+        """
+        pre: (None)
+        post: displays the ConfigScreen
+        """
+
         WIN.fill(POWDER_BLUE)
         direction = FONT.render("Select a Difficulty", True, OXFORD_BLUE)
         WIN.blit(direction, (100, 70))
@@ -228,7 +218,7 @@ class ConfigScreen(Screen):
     def handle_event(self, event):
         """
         pre: takes an event
-        post: selects the difficulty
+        post: returns GameScreen if user selects difficulty,otherwise the same configuration screen
         """
         buttons = [self.easy, self.medium, self.hard]
         for b in buttons:
@@ -246,7 +236,7 @@ class ConfigScreen(Screen):
 
 class GameScreen(Screen):
     """
-    Represents the game
+    Represents the game screen
     """
 
     dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
@@ -270,11 +260,7 @@ class GameScreen(Screen):
         self.error_count = 0
         self.gallow = Gallow()
         self.user_input = UserInput()
-        
-        #self.word_guess = Text(420, 450)
         self.used_list = UsedLetters()
-        # self.used_list = Text(420, 550)
-        # self.used_list.used_letters()
         self.secret_word = difficulty_word[difficulty]
         self.word_guess = Word(self.secret_word)
         print(self.secret_word)
@@ -282,7 +268,7 @@ class GameScreen(Screen):
     def handle_event(self, event):
         """
         pre: takes an event
-        post: decide
+        post: returns the win screen if player won, lose screen if they lost, or the same game screen if they have not reached either point
         """
         guess = self.user_input.handle_event(event)
 
@@ -323,10 +309,13 @@ class GameScreen(Screen):
         self.error_count += 1
 
         self.gallow.draw_body()
+
         return self
 
 
-class LoseScreen(Screen):
+class EndScreen(Screen): pass
+
+class LoseScreen(EndScreen):
     """
     represents the final screen if the player loses
     """
@@ -379,23 +368,22 @@ class LoseScreen(Screen):
 
         if self.restart.is_clicked():
             return ConfigScreen()
-        
+
         if self.quit.is_clicked():
             return None
 
-        return self    
+        return self
 
-            
 
-class WinScreen:
-    """ represents the screen the player reaches when they win
+class WinScreen(EndScreen):
+    """
+    Represents the screen the player reaches when they win
     """
 
-
     win_text = """
-    Congratulations!
-    You correctly guessed the secret word "{0}"
-    click the 'Restart' button if you want to play again, and 'Quit' to exit
+        Congratulations!
+        You correctly guessed the secret word "{0}"
+        click the 'Restart' button if you want to play again, and 'Quit' to exit
     """
 
     def __init__(self, secret_word):
@@ -415,9 +403,9 @@ class WinScreen:
             message = FONT.render(line.strip(), True, WHITE)
             WIN.blit(message, (x, y))
             y += 50
-    
 
-    def handle_event(self, event):
+
+    def handle_event(self, _):
         """
         pre: takes an event
         post: returns user to difficulty screen if restart is clicked, returns none if quit is clicked, returns self otherwise
@@ -427,25 +415,23 @@ class WinScreen:
 
         if self.restart.is_clicked():
             return ConfigScreen()
-        
+
         if self.quit.is_clicked():
             return None
 
-        return self    
+        return self
 
-    
 
 class UsedLetters:
     """represents the letters user has entered throughout game"""
 
     def __init__(self, x = 420, y = 550):
-        self.used_letters = ""
-
         """
         pre: (none)
         post: draws the empty list of used letters
-        self.used_list = Text(420, 550)
         """
+
+        self.used_letters = ""
         self.x = x
         self.y = y
         text = FONT.render("Letters used: ", True, WHITE)
@@ -504,8 +490,8 @@ class Word:
         """
         Pre: takes the word to draw
         Post: renders the new word on the screen
-        change bkg of game screen, get red color for the error
         """
+
         print("The new word", new_word)
         pos = (self.x, self.y)
         WIN.fill(OXFORD_BLUE, pygame.Rect(self.x - 10, self.y - 10, self.width + 10, self.height + 10))
@@ -616,17 +602,33 @@ class WordGuess:
         return LOST_MATCH
 
 
-screen = IntroScreen()
-
-while screen:
-    pygame.time.delay(50)
+def event_loop(scr):
+    """
+    Pre: receives a screen to forward events
+    Post: returns the screen after handing the events
+    """
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
-        screen = screen.handle_event(event)    
+        scr = screen.handle_event(event)
 
     pygame.display.flip()
+
+    return scr
+
+screen = IntroScreen()
+
+while screen:
+    pygame.time.delay(50)
+
+    # While the user is playing
+    while not isinstance(screen, EndScreen):
+        screen = event_loop(screen)
+
+    # While the user is choosing to quit or retry
+    while screen and isinstance(screen, EndScreen):
+        screen = event_loop(screen)
 
 pygame.quit()
