@@ -20,7 +20,7 @@ PARTIAL_MATCH = 2
 FULL_MATCH = 8
 LOST_MATCH = 16
 
-#hangman stand details
+#list of colors
 GREEN = pygame.Color(0, 255, 0)
 RED = pygame.Color("#EA5C1F")
 BLUE = pygame.Color(0, 0, 255)
@@ -34,16 +34,15 @@ AZURE_WHITE = pygame.Color("#F2FDFF")
 RED_PIGMENT = pygame.Color("#FF002B")
 RUSSIAN_GREEN = pygame.Color("#678D58")
 
-# set up the window
-
-
-
+#font specification 
 FONT = pygame.font.SysFont(None, 30)
 
 # surface details
 WIN = pygame.display.set_mode((1200, 768))
 pygame.display.set_caption("Hangman")
-alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+
+#alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
               [pygame.draw.circle, WHITE, (425, 230), 30, 5],
@@ -189,6 +188,7 @@ class IntroScreen(Screen):
      we're going to give you a word, and you have to guess it letter by letter
      or if you're confident , grab it in one go 
      you must choose the characters and then press enter for the guess to be registered
+    if you press the delete button the last character entered will be removed
      for every letter error you make, a body part will be drawn.
       you have a limit of eight errors, and the ninth will make you lose 
      furthermore, if you attempt to guess the word and it is wrong, you will also lose
@@ -218,6 +218,8 @@ class ConfigScreen(Screen):
     """represents the difficulty selection screen"""
     def __init__(self):
         WIN.fill(POWDER_BLUE)
+        direction = FONT.render("Select a Difficulty", True, OXFORD_BLUE)
+        WIN.blit(direction, (100, 70))
         self.easy = Button(100, 100, "Easy: 9+ letters", EASY)
         self.medium = Button(100, 200, "Medium:  6-8 letters", MEDIUM)
         self.hard = Button(100, 300, "Hard: 3-5 letters", HARD)
@@ -260,6 +262,10 @@ class GameScreen(Screen):
         pre: Takes difficulty selected
         post: Initializes the game screen components: Gallow, UserInput, UsedLetters and WordGuess
         """
+        difficulty_word = {EASY: random.choice(self.easy_words), MEDIUM: random.choice(self.medium_words), HARD: random.choice(self.hard_words)}
+
+
+
         WIN.fill(OXFORD_BLUE)
         self.error_count = 0
         self.gallow = Gallow()
@@ -269,7 +275,7 @@ class GameScreen(Screen):
         self.used_list = UsedLetters()
         # self.used_list = Text(420, 550)
         # self.used_list.used_letters()
-        self.secret_word = self.difficulty_word[difficulty]
+        self.secret_word = difficulty_word[difficulty]
         self.word_guess = Word(self.secret_word)
         print(self.secret_word)
         self.correct_letters  = ""
@@ -512,6 +518,8 @@ class UserInput:
     """represents the user input(letter, word) in the game"""
     user_input = ""
     char_selection = Text(600, 200)
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+
     def handle_event(self, event):
         """
         pre: takes an event
@@ -520,7 +528,7 @@ class UserInput:
         if event.type != pygame.KEYDOWN:
             return
 
-        if event.unicode in alphabet:
+        if event.unicode in self.alphabet:
             self.user_input += event.unicode
             self.char_selection.display_choice(self.user_input)
 
