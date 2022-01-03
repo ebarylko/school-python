@@ -1,9 +1,8 @@
 # This Python file uses the following encoding: utf-8
 
-#Eitan
+# Eitan
 #python pygame version
 
-import functools
 import random
 import sys
 import pygame
@@ -44,12 +43,14 @@ pygame.display.set_caption("Hangman")
 
 class Text:
     """represents the text on the screen"""
+
+    last_message = ""
+
     def __init__(self, x, y, size = 40, color = WHITE, background = OXFORD_BLUE):
         """
         pre: takes x and y position, optional size and color
 		post: initializes attributes of the text
         """
-
         self.x = x
         self.y = y
         self.color = color
@@ -68,6 +69,8 @@ class Text:
             WIN.blit(text, (self.x, new_y))
             new_y += 50
 
+        self.last_message = message
+
         return new_y
 
     def clear_text(self):
@@ -75,7 +78,9 @@ class Text:
         Pre: (None)
         Post: Clears the text at the given x and y position
         """
-        WIN.fill(self.background, (self.x - 10, self.y, 730, 100))
+        if self.last_message:
+            width, height = self.font.size(self.last_message)
+            WIN.fill(self.background, pygame.Rect(self.x, self.y, width, height))
 
 
 class Button:
@@ -85,7 +90,6 @@ class Button:
          pre: takes the x and y coordinates, and text
         post: creates the button at position with given text
         """
-       
         self.x = x_coord
         self.y = y_coord
         self.font = pygame.font.SysFont(None, 80)
