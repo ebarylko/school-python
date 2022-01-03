@@ -34,8 +34,8 @@ AZURE_WHITE = pygame.Color("#F2FDFF")
 RED_PIGMENT = pygame.Color("#FF002B")
 RUSSIAN_GREEN = pygame.Color("#678D58")
 
-#font specification 
-FONT = pygame.font.SysFont(None, 30)
+#font specification
+FONT_SIZE = 30
 
 # surface details
 WIN = pygame.display.set_mode((1200, 768))
@@ -72,29 +72,11 @@ class Text:
 
     def clear_text(self):
         """
-         pre: (None)
-        post: clears the text at the given x and y position
+        Pre: (None)
+        Post: Clears the text at the given x and y position
         """
         WIN.fill(self.background, (self.x - 10, self.y, 730, 100))
 
-
-def draw_error(letter, x = 330, y = 620 ,):
-    """
-     pre: takes x and y coordinates, letter
-    post: draws error message on the screen    
-    """
-
-    text = FONT.render(("You already used {0}, please use another letter".format(letter)), True, RED)
-    WIN.blit(text , (x, y))     
-
-
-def clear_error(x= 330, y = 620):
-    """
-    pre: takes x and y coordinates
-    post: clears the error message from the screen
-    """
-
-    WIN.fill(OXFORD_BLUE, (x - 10, y - 10, 730, 100))
 
 class Button:
     """represents the button used in game"""
@@ -227,7 +209,9 @@ class IntroScreen(Screen):
 
 
 class ConfigScreen(Screen):
-    """represents the difficulty selection screen"""
+    """
+    Represents the difficulty selection screen
+    """
 
     def __init__(self):
         """
@@ -235,8 +219,8 @@ class ConfigScreen(Screen):
         post: displays the ConfigScreen
         """
         super().__init__()
-        direction = FONT.render("Select a Difficulty", True, OXFORD_BLUE)
-        WIN.blit(direction, (100, 70))
+
+        Text(100, 70, color = OXFORD_BLUE).render("Select a Difficulty")
 
         opts = {
             "Easy: 9+ letters": EASY,
@@ -249,8 +233,9 @@ class ConfigScreen(Screen):
 
     def handle_event(self, event):
         """
-        pre: takes an event
-        post: returns GameScreen if user selects difficulty,otherwise the same configuration screen
+        Pre: Takes an event
+        Post: Returns an instance of GameScreen if the user selects a difficulty,
+        otherwise returns the same configuration screen
         """
         level = self.btn_group.handle_event(event)
 
@@ -264,7 +249,6 @@ class GameScreen(Screen):
     """
     Represents the game screen
     """
-
     dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
 
     easy_words = list(filter((lambda word: len(word) >= 9), dictionary_words))
@@ -288,6 +272,16 @@ class GameScreen(Screen):
         self.secret_word = self.difficulty_word[difficulty]
         self.word_guess = Word(self.secret_word)
         self.correct_letters  = ""
+        self.error = Text(330, 620, color = RED)
+
+
+    def already_used_letter(self, letter):
+        """
+        Pre: Takes the letter that was already used
+        Post: Renders the error message on the screen
+        """
+        self.error.render("You already used {0}, please use another letter".format(letter))
+
 
     def handle_event(self, event):
         """
@@ -299,7 +293,7 @@ class GameScreen(Screen):
         if not guess:
             return self
 
-        clear_error()
+        self.error.clear_text()
 
         match = guess.matches(self.secret_word, self.correct_letters)
 
@@ -310,9 +304,8 @@ class GameScreen(Screen):
             return WinScreen(self.secret_word)
 
         if guess.guess in self.used_list.used_letters:
-            draw_error(guess.guess)
+            self.already_used_letter(guess.guess)
             return self
-
 
         if match == PARTIAL_MATCH:
             self.correct_letters += guess.guess
@@ -327,6 +320,7 @@ class GameScreen(Screen):
         self.error_count += 1
         self.gallow.draw_body()
         return self
+
 
 class EndScreen(Screen):
     RESTART = 1
@@ -430,23 +424,18 @@ class UsedLetters:
         pre: (none)
         post: draws the empty list of used letters
         """
-
+        self.text = Text(x, y, size = 40, background = OXFORD_BLUE)
         self.used_letters = ""
-        self.x = x
-        self.y = y
-        text = FONT.render("Letters used: ", True, WHITE)
-        WIN.blit(text, (self.x, self.y))
+        self.update_list("")
+
 
     def update_list(self, letter):
-
         """
-        pre:takes a letter
-        post: redraws the used letter list with new character
+        Pre: Takes a letter
+        Post: Redraws the used letter list with new character
         """
         self.used_letters += letter
-        text = FONT.render(("Letters used: " + self.used_letters), True, WHITE)
-        WIN.fill(OXFORD_BLUE, (self.x - 10, self.y, 730, 100))
-        WIN.blit(text, (self.x, self.y))
+        self.text.render("Letters used: " + self.used_letters)
 
 
 class Word:
