@@ -41,60 +41,41 @@ FONT = pygame.font.SysFont(None, 30)
 WIN = pygame.display.set_mode((1200, 768))
 pygame.display.set_caption("Hangman")
 
-body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
-              [pygame.draw.circle, WHITE, (425, 230), 30, 5],
-              [pygame.draw.line, WHITE, (425, 260), (425, 305), 5],
-              [pygame.draw.line, WHITE, (425, 260), (425, 350), 5],
-              [pygame.draw.line,  WHITE, (425, 305), (365, 305), 5],
-              [pygame.draw.line, WHITE, (425, 305), (485, 305), 5],
-              [pygame.draw.line, WHITE, (425, 350), (365, 400), 5],
-              [pygame.draw.line, WHITE, (425, 350), (485, 400), 5]]
-
-
-
-def render_text(message, color, x = 100, y  = 100):
-    """
-    pre: takes a message, color, and a set of coordinates
-    post: displays the text on the screen and returns the y coordinate after the text
-    """
-    for line in message.splitlines():
-        text = FONT.render(line.strip(), True, color)
-        WIN.blit(text, (x, y))
-        y += 50
-
-    return y 
-
 
 class Text:
     """represents the text on the screen"""
-    def __init__(self, x, y, size = 40, color = WHITE):
+    def __init__(self, x, y, size = 40, color = WHITE, background = OXFORD_BLUE):
         """
         pre: takes x and y position, optional size and color
 		post: initializes attributes of the text
-        """ 
+        """
 
         self.x = x
         self.y = y
         self.color = color
         self.size = size
         self.font = pygame.font.SysFont(None, self.size)
+        self.background = background
 
-        
-    def display_choice(self, choice):
+    def render(self, message):
         """
-        pre: takes the characters chosen
-        post: draws the choice on the side of the screen
+        pre: takes a message
+        post: displays the text on the screen and returns the y coordinate after the text
         """
-        self.text = self.font.render(choice, True, self.color)
-        WIN.blit(self.text, (self.x, self.y))	
-        
+        new_y = self.y
+        for line in message.splitlines():
+            text = self.font.render(line.strip(), True, self.color)
+            WIN.blit(text, (self.x, new_y))
+            new_y += 50
+
+        return new_y
+
     def clear_text(self):
         """
          pre: (None)
         post: clears the text at the given x and y position
         """
-        WIN.fill(OXFORD_BLUE, (self.x - 10, self.y, 730, 100))
-          
+        WIN.fill(self.background, (self.x - 10, self.y, 730, 100))
 
 
 def draw_error(letter, x = 330, y = 620 ,):
@@ -190,10 +171,18 @@ class ButtonGroup:
 
 class Screen:
     """represents the base screen"""
+
+    def __init__(self, background = POWDER_BLUE):
+        """
+        pre: takes a background color
+        post:  fills the screen with the background color
+        """
+        WIN.fill(background)
+
     def handle_event(self, event):
         """
         handles the event and returns the next screen if it changes
-        pre: event
+        pre: takes an event
         post: returns the screen to handle the next event
         """
         return self
@@ -205,7 +194,7 @@ class IntroScreen(Screen):
     rules =  """
     Welcome to colorful hangman
      we're going to give you a word, and you have to guess it letter by letter
-     or if you're confident , grab it in one go 
+     or if you're confident, grab it in one go 
      you must choose the characters and then press enter for the guess to be registered
     if you press the delete button the last character entered will be removed
      for every letter error you make, a body part will be drawn.
@@ -215,20 +204,20 @@ class IntroScreen(Screen):
      Good luck!"""
 
 
-
     def __init__(self):
         """
         pre: (None)
         post: displays the intro screen
         """
-        WIN.fill(POWDER_BLUE)
-        y = render_text(self.rules, OXFORD_BLUE)
+        super().__init__()
+        y = Text(100, 100, size = 30, color = OXFORD_BLUE).render(self.rules)
         self.button = Button(100, y, "START")
 
     def handle_event(self, event):
         """
         pre: takes an event
         post: returns ConfigScreen if user wants  to start playing, otherwise the same intro screen
+
         """
         self.button.draw_button()
         if self.button.is_clicked():
@@ -239,13 +228,13 @@ class IntroScreen(Screen):
 
 class ConfigScreen(Screen):
     """represents the difficulty selection screen"""
+
     def __init__(self):
         """
         pre: (None)
         post: displays the ConfigScreen
         """
-        WIN.fill(POWDER_BLUE)
-
+        super().__init__()
         direction = FONT.render("Select a Difficulty", True, OXFORD_BLUE)
         WIN.blit(direction, (100, 70))
 
@@ -289,19 +278,17 @@ class GameScreen(Screen):
         pre: Takes difficulty selected
         post: Initializes the game screen components: Gallow, UserInput, UsedLetters and WordGuess
         """
-        difficulty_word = {EASY: random.choice(self.easy_words), MEDIUM: random.choice(self.medium_words), HARD: random.choice(self.hard_words)}
 
+        super().__init__(OXFORD_BLUE)
 
-
-        WIN.fill(OXFORD_BLUE)
         self.error_count = 0
         self.gallow = Gallow()
         self.user_input = UserInput()
         self.used_list = UsedLetters()
-        self.secret_word = difficulty_word[difficulty]
+        self.secret_word = self.difficulty_word[difficulty]
         self.word_guess = Word(self.secret_word)
-        print(self.secret_word)
         self.correct_letters  = ""
+
     def handle_event(self, event):
         """
         pre: takes an event
@@ -314,7 +301,7 @@ class GameScreen(Screen):
 
         clear_error()
 
-        match = guess.matches(self.secret_word)
+        match = guess.matches(self.secret_word, self.correct_letters)
 
         if match == LOST_MATCH:
             return LoseScreen(guess.guess, self.secret_word)
@@ -323,7 +310,6 @@ class GameScreen(Screen):
             return WinScreen(self.secret_word)
 
         if guess.guess in self.used_list.used_letters:
-            print("Duplicate")
             draw_error(guess.guess)
             return self
 
@@ -332,23 +318,15 @@ class GameScreen(Screen):
             self.correct_letters += guess.guess
             self.word_guess.update_word(guess.guess)
             self.used_list.update_list(guess.guess)
-            if set(self.correct_letters) == set(self.secret_word):
-                return WinScreen(self.secret_word)
-
             return self
 
         if self.error_count == 8:
             return LoseScreen(guess.guess, self.secret_word)
 
-
         self.used_list.update_list(guess.guess)
-
         self.error_count += 1
-
         self.gallow.draw_body()
-
         return self
-
 
 class EndScreen(Screen):
     RESTART = 1
@@ -356,10 +334,10 @@ class EndScreen(Screen):
 
     def __init__(self, background, message):
         """
-        pre: takes the erroneous guess(letter/word) and the secret_word
+        pre: takes the background color and message
         post: displays the lose screen
         """
-        WIN.fill(background)
+        super().__init__(background)
 
         self.btn_group = ButtonGroup(
             100, 400,
@@ -367,7 +345,7 @@ class EndScreen(Screen):
             Quit = self.QUIT
         )
 
-        render_text(message, WHITE)
+        Text(100, 100, background = WHITE).render(message)
 
 
     def handle_event(self, event):
@@ -513,8 +491,6 @@ class Word:
         Pre: takes the word to draw
         Post: renders the new word on the screen
         """
-
-        print("The new word", new_word)
         pos = (self.x, self.y)
         WIN.fill(OXFORD_BLUE, pygame.Rect(self.x - 10, self.y - 10, self.width + 10, self.height + 10))
         with_spaces = "".join([c + ' ' for c in new_word])
@@ -538,12 +514,12 @@ class UserInput:
 
         if event.unicode in self.alphabet:
             self.user_input += event.unicode
-            self.char_selection.display_choice(self.user_input)
+            self.char_selection.render(self.user_input)
 
         if event.key == pygame.K_BACKSPACE:
             self.user_input = self.user_input[0:-1]
             self.char_selection.clear_text()
-            self.char_selection.display_choice(self.user_input)
+            self.char_selection.render(self.user_input)
             return
 
         if event.key == pygame.K_RETURN:
@@ -556,25 +532,43 @@ class UserInput:
 class Gallow:
     """represents the gallow in the game"""
 
+    body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
+                [pygame.draw.circle, WHITE, (425, 230), 30, 5],
+                [pygame.draw.line, WHITE, (425, 260), (425, 305), 5],
+                [pygame.draw.line, WHITE, (425, 260), (425, 350), 5],
+                [pygame.draw.line,  WHITE, (425, 305), (365, 305), 5],
+                [pygame.draw.line, WHITE, (425, 305), (485, 305), 5],
+                [pygame.draw.line, WHITE, (425, 350), (365, 400), 5],
+                [pygame.draw.line, WHITE, (425, 350), (485, 400), 5]]
+
+
+
     def __init__(self):
-        #pre: (None)
-        #post: draws the empty gallow
+        """
+        pre: (None)
+        post: draws the empty gallow
+        """
         pygame.draw.rect(WIN, WHITE, ((76, 500), (291, 106)), 0)
         pygame.draw.line(WIN, BLUE, (226, 553), (226, 100 ), 10)
         pygame.draw.line(WIN, RED, (222, 100), (430, 100), 10)
         self.error = 0
 
     def draw_body(self):
-        #pre: (None)
-        #post: draws body part of hangman
-        fn, *args = body_parts[self.error]
+        """
+        pre: (None)
+        post: draws body part of hangman
+        """
+    
+        fn, *args = self.body_parts[self.error]
         fn(WIN, *args)
         self.error += 1
 
     def hang(self):
-        #pre: (None)
-        #post: draws the full body
-        for part in body_parts:
+        """
+        pre: (None)
+        post: draws the full body
+        """
+        for part in self.body_parts:
             fn, *args = part
             fn(WIN, *args)
 
@@ -591,17 +585,18 @@ class LetterGuess:
         """
         self.guess = guess
         
-    def matches(self, secret_word):
+    def matches(self, secret_word, letters):
         """
-        pre: takes the secret_word
-        post: returns PARTIAL_MATCH if guess in secret_word
+        pre: takes the secret_word and the correct letters guessed so far
+        post: returns PARTIAL_MATCH if guess in secret_word, FULL_MATCH if all the letters  were guessed
         """
-        if self.guess in secret_word:
-            return PARTIAL_MATCH
+        if self.guess not in secret_word:
+            return NO_MATCH
 
+        if set(letters + self.guess) == set(secret_word):
+            return FULL_MATCH
         
-        return NO_MATCH
-
+        return PARTIAL_MATCH
 
 class WordGuess:
     """
@@ -614,7 +609,7 @@ class WordGuess:
         """
         self.guess = guess
         
-    def matches(self, secret_word):
+    def matches(self, secret_word, _):
         """
         pre: takes the secret_word
         post: returns FULL_MATCH if guess is secret_word, LOST_MATCH otherwise
