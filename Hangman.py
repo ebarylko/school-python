@@ -115,7 +115,6 @@ def clear_error(x= 330, y = 620):
 
     WIN.fill(OXFORD_BLUE, (x - 10, y - 10, 730, 100))
 
-
 class Button:
     """represents the button used in game"""
     def __init__(self, x_coord, y_coord, text, clicked = True):
@@ -159,6 +158,35 @@ class Button:
         return pressed and self.hover and self.clicked
 
 
+class ButtonGroup:
+    """
+    Represents a collection of buttons to select an option
+    """
+
+    def __init__(self, x, y, **config):
+        """
+        pre: takes initial position for the first button, and the details for each button
+        post: draws the  buttons one below the other
+        """
+        self.buttons = []
+
+        for text, clicked in config.items():
+            self.buttons.append(Button(x, y, text, clicked))
+            y += 100
+
+
+    def handle_event(self, _):
+        """
+        pre:takes an event
+        post: returns the value of the button if clicked, or None
+        """
+
+        for b in self.buttons:
+            b.draw_button()
+
+        selected = [b.is_clicked() for b in self.buttons if b.is_clicked()]
+
+        return selected and selected[0]
 
 class Screen:
     """represents the base screen"""
@@ -216,13 +244,18 @@ class ConfigScreen(Screen):
         pre: (None)
         post: displays the ConfigScreen
         """
-
         WIN.fill(POWDER_BLUE)
+
         direction = FONT.render("Select a Difficulty", True, OXFORD_BLUE)
         WIN.blit(direction, (100, 70))
-        self.easy = Button(100, 100, "Easy: 9+ letters", EASY)
-        self.medium = Button(100, 200, "Medium:  6-8 letters", MEDIUM)
-        self.hard = Button(100, 300, "Hard: 3-5 letters", HARD)
+
+        opts = {
+            "Easy: 9+ letters": EASY,
+            "Medium:  6-8 letters": MEDIUM,
+            "Hard: 3-5 letters": HARD
+        }
+
+        self.btn_group = ButtonGroup(100, 100, **opts)
 
 
     def handle_event(self, event):
@@ -230,18 +263,12 @@ class ConfigScreen(Screen):
         pre: takes an event
         post: returns GameScreen if user selects difficulty,otherwise the same configuration screen
         """
-        buttons = [self.easy, self.medium, self.hard]
-        for b in buttons:
-            b.draw_button()
+        level = self.btn_group.handle_event(event)
 
+        if level:
+            return GameScreen(level)
 
-        selected  = [b.is_clicked() for b in buttons if b.is_clicked()]
-
-
-        if selected:
-            return GameScreen(selected[0])
-
-        return self 
+        return self
 
 
 class GameScreen(Screen):
@@ -324,6 +351,8 @@ class GameScreen(Screen):
 
 
 class EndScreen(Screen):
+    RESTART = 1
+    QUIT = 2
 
     def __init__(self, background, message):
         """
@@ -332,9 +361,11 @@ class EndScreen(Screen):
         """
         WIN.fill(background)
 
-        self.restart = Button(100, 400, "Restart")
-        self.quit = Button(100, 470, "Quit")
-        self.buttons = [self.restart, self.quit]
+        self.btn_group = ButtonGroup(
+            100, 400,
+            Restart = self.RESTART,
+            Quit = self.QUIT
+        )
 
         render_text(message, WHITE)
 
@@ -344,13 +375,14 @@ class EndScreen(Screen):
         pre: takes an event
         post: returns user to difficulty screen if restart is clicked, returns none if quit is clicked, returns self otherwise
         """
-        for b in self.buttons:
-            b.draw_button()
 
-        if self.restart.is_clicked():
+        btn = self.btn_group.handle_event(event)
+
+
+        if btn  == self.RESTART:
             return ConfigScreen()
 
-        if self.quit.is_clicked():
+        if btn == self.QUIT:
             return None
 
         return self
