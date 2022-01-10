@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+# above comment is for mac
 
 # Eitan
 #python pygame version
@@ -9,15 +10,19 @@ import pygame
 pygame.init()
 
 #difficulty levels constants
-EASY = 1
-MEDIUM = 2
-HARD = 4
 
 # matching constants
 NO_MATCH = 1
 PARTIAL_MATCH = 2
 FULL_MATCH = 8
 LOST_MATCH = 16
+
+
+#sounds to use
+bad_guess = pygame.mixer.Sound("sounds/klaxon.wav")
+good_guess = pygame.mixer.Sound("sounds/'Right on' и ответные реплики прихожан.mp3")
+victory = pygame.mixer.Sound("sounds/Applause.mp3")
+loss  = pygame.mixer.Sound("sounds/Boo.mp3")
 
 #list of colors
 GREEN = pygame.Color(0, 255, 0)
@@ -38,7 +43,7 @@ FONT_SIZE = 30
 
 # surface details
 WIN = pygame.display.set_mode((1200, 768))
-pygame.display.set_caption("Hangman")
+pygame.display.set_caption("Colorful Hangman")
 
 
 class Text:
@@ -87,7 +92,7 @@ class Button:
     """represents the button used in game"""
     def __init__(self, x_coord, y_coord, text, clicked = True):
         """
-         pre: takes the x and y coordinates, and text
+         pre: takes the x and y coordinates, text, optional  clicked value
         post: creates the button at position with given text
         """
         self.x = x_coord
@@ -174,21 +179,53 @@ class Screen:
         return self
 
 
+class Difficulty:
+    """
+    represents the difficulty setting of the game
+    """
+    EASY = 1
+    MEDIUM = 2
+    HARD = 4
+
+    dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
+
+    difficulty_word = {
+        EASY: range(9, 200),
+        MEDIUM: range(6, 9),
+        HARD: range(3, 6)
+    }
+
+    levels = {
+        "Easy: 9+ letters": EASY,
+        "Medium: 6-8 letters": MEDIUM,
+        "Hard: 3-5 letters": HARD
+    }
+
+    def secret_word(self, level):
+        """
+        pre: takes a level
+        post: returns the secret word for that level
+        """
+        rng = self.difficulty_word[level]
+        choices = list(filter(lambda w: len(w) in rng, self.dictionary_words))
+        return random.choice(choices)
+
+
 class IntroScreen(Screen):
     """Represents the screen to start the game"""
 
-    rules =  """
-    Welcome to colorful hangman
-     we're going to give you a word, and you have to guess it letter by letter
-     or if you're confident, grab it in one go 
-     you must choose the characters and then press enter for the guess to be registered
-    if you press the delete button the last character entered will be removed
-     for every letter error you make, a body part will be drawn.
-      you have a limit of eight errors, and the ninth will make you lose 
-     furthermore, if you attempt to guess the word and it is wrong, you will also lose
-    click the button to begin
-     Good luck!"""
-
+    rules = """
+        Welcome to colorful hangman
+        we're going to give you a word, and you have to guess it letter by letter
+        or if you're confident, grab it in one go
+        you must choose the characters and then press enter for the guess to be registered
+        if you press the delete button the last character entered will be removed
+        for every letter error you make, a body part will be drawn.
+        you have a limit of eight errors, and the ninth will make you lose
+        furthermore, if you attempt to guess the word and it is wrong, you will also lose
+        click the button to begin
+        Good luck!
+    """
 
     def __init__(self):
         """
@@ -196,14 +233,14 @@ class IntroScreen(Screen):
         post: displays the intro screen
         """
         super().__init__()
-        y = Text(100, 100, size = 30, color = OXFORD_BLUE).render(self.rules)
+        y = Text(100, 100, size=30, color=OXFORD_BLUE).render(self.rules)
         self.button = Button(100, y, "START")
 
     def handle_event(self, event):
         """
         pre: takes an event
-        post: returns ConfigScreen if user wants  to start playing, otherwise the same intro screen
-
+        post: returns ConfigScreen if user wants to start playing,
+        otherwise returns self
         """
         self.button.draw_button()
         if self.button.is_clicked():
@@ -216,6 +253,7 @@ class ConfigScreen(Screen):
     """
     Represents the difficulty selection screen
     """
+    difficulty = Difficulty()
 
     def __init__(self):
         """
@@ -223,17 +261,8 @@ class ConfigScreen(Screen):
         post: displays the ConfigScreen
         """
         super().__init__()
-
-        Text(100, 70, color = OXFORD_BLUE).render("Select a Difficulty")
-
-        opts = {
-            "Easy: 9+ letters": EASY,
-            "Medium:  6-8 letters": MEDIUM,
-            "Hard: 3-5 letters": HARD
-        }
-
-        self.btn_group = ButtonGroup(100, 100, **opts)
-
+        Text(100, 70, color=OXFORD_BLUE).render("Select a difficulty please")
+        self.btn_group = ButtonGroup(100, 100, **self.difficulty.levels)
 
     def handle_event(self, event):
         """
@@ -244,7 +273,7 @@ class ConfigScreen(Screen):
         level = self.btn_group.handle_event(event)
 
         if level:
-            return GameScreen(level)
+            return GameScreen(self.difficulty.secret_word(level))
 
         return self
 
@@ -253,31 +282,23 @@ class GameScreen(Screen):
     """
     Represents the game screen
     """
-    dictionary_words = open("Dictionary.txt").read().strip(" ").split(" \n")
 
-    easy_words = list(filter((lambda word: len(word) >= 9), dictionary_words))
-    medium_words = list(filter((lambda word: len(word) >= 6 and len(word) <= 8), dictionary_words))
-    hard_words = list(filter((lambda word: len(word) >= 3 and len(word) <= 5), dictionary_words))
-
-    difficulty_word = {EASY: random.choice(easy_words), MEDIUM: random.choice(medium_words), HARD: random.choice(hard_words)}
-
-    def __init__(self, difficulty):
+    def __init__(self, secret_word):
         """
-        pre: Takes difficulty selected
+        pre: Takes secret word
         post: Initializes the game screen components: Gallow, UserInput, UsedLetters and WordGuess
         """
-
         super().__init__(OXFORD_BLUE)
 
         self.error_count = 0
         self.gallow = Gallow()
         self.user_input = UserInput()
         self.used_list = UsedLetters()
-        self.secret_word = self.difficulty_word[difficulty]
+        self.secret_word = secret_word
         self.word_guess = Word(self.secret_word)
         self.correct_letters  = ""
         self.error = Text(330, 620, color = RED)
-
+        print(self.secret_word)
 
     def already_used_letter(self, letter):
         """
@@ -302,9 +323,13 @@ class GameScreen(Screen):
         match = guess.matches(self.secret_word, self.correct_letters)
 
         if match == LOST_MATCH:
+            pygame.mixer.stop()
+            pygame.mixer.Sound.play(loss)
             return LoseScreen(guess.guess, self.secret_word)
 
         if match == FULL_MATCH:
+            pygame.mixer.stop()
+            pygame.mixer.Sound.play(victory)
             return WinScreen(self.secret_word)
 
         if guess.guess in self.used_list.used_letters:
@@ -312,6 +337,8 @@ class GameScreen(Screen):
             return self
 
         if match == PARTIAL_MATCH:
+            pygame.mixer.stop()
+            pygame.mixer.Sound.play(good_guess)
             self.correct_letters += guess.guess
             self.word_guess.update_word(guess.guess)
             self.used_list.update_list(guess.guess)
@@ -320,6 +347,8 @@ class GameScreen(Screen):
         if self.error_count == 8:
             return LoseScreen(guess.guess, self.secret_word)
 
+        pygame.mixer.stop()
+        pygame.mixer.Sound.play(bad_guess)
         self.used_list.update_list(guess.guess)
         self.error_count += 1
         self.gallow.draw_body()
@@ -356,9 +385,11 @@ class EndScreen(Screen):
 
 
         if btn  == self.RESTART:
+            pygame.mixer.stop()
             return ConfigScreen()
 
         if btn == self.QUIT:
+            pygame.mixer.stop()
             return None
 
         return self
@@ -525,6 +556,7 @@ class UserInput:
 class Gallow:
     """represents the gallow in the game"""
 
+    #body parts for hangman
     body_parts = [[pygame.draw.line, GREEN, (425, 95), (425, 200), 10],
                 [pygame.draw.circle, WHITE, (425, 230), 30, 5],
                 [pygame.draw.line, WHITE, (425, 260), (425, 305), 5],
