@@ -20,7 +20,7 @@ LOST_MATCH = 16
 
 #sounds to use
 bad_guess = pygame.mixer.Sound("sounds/klaxon.wav")
-good_guess = pygame.mixer.Sound("sounds/'Right on' и ответные реплики прихожан.mp3")
+good_guess = pygame.mixer.Sound("sounds/gold.wav")
 victory = pygame.mixer.Sound("sounds/Applause.mp3")
 loss  = pygame.mixer.Sound("sounds/Boo.mp3")
 
@@ -163,11 +163,12 @@ class ButtonGroup:
 class Screen:
     """represents the base screen"""
 
-    def __init__(self, background = POWDER_BLUE):
+    def __init__(self, background=POWDER_BLUE):
         """
         pre: takes a background color
         post:  fills the screen with the background color
         """
+        pygame.mixer.stop()
         WIN.fill(background)
 
     def handle_event(self, event):
@@ -323,13 +324,9 @@ class GameScreen(Screen):
         match = guess.matches(self.secret_word, self.correct_letters)
 
         if match == LOST_MATCH:
-            pygame.mixer.stop()
-            pygame.mixer.Sound.play(loss)
             return LoseScreen(guess.guess, self.secret_word)
 
         if match == FULL_MATCH:
-            pygame.mixer.stop()
-            pygame.mixer.Sound.play(victory)
             return WinScreen(self.secret_word)
 
         if guess.guess in self.used_list.used_letters:
@@ -359,20 +356,22 @@ class EndScreen(Screen):
     RESTART = 1
     QUIT = 2
 
-    def __init__(self, background, message):
+    def __init__(self, background, message, sound=None):
         """
         pre: takes the background color and message
         post: displays the lose screen
         """
         super().__init__(background)
+        if sound:
+            pygame.mixer.Sound.play(sound)
 
         self.btn_group = ButtonGroup(
             100, 400,
-            Restart = self.RESTART,
-            Quit = self.QUIT
+            Restart=self.RESTART,
+            Quit=self.QUIT
         )
 
-        Text(100, 100, background = WHITE).render(message)
+        Text(100, 100, background=WHITE).render(message)
 
 
     def handle_event(self, event):
@@ -385,11 +384,9 @@ class EndScreen(Screen):
 
 
         if btn  == self.RESTART:
-            pygame.mixer.stop()
             return ConfigScreen()
 
         if btn == self.QUIT:
-            pygame.mixer.stop()
             return None
 
         return self
@@ -425,7 +422,7 @@ class LoseScreen(EndScreen):
         if len(guess) > 1:
             lose_message = self.wrong_word.format(guess, secret_word)
 
-        super().__init__(RED, lose_message)
+        super().__init__(RED, lose_message, loss)
 
 
 
@@ -447,7 +444,7 @@ class WinScreen(EndScreen):
         post: displays the win screen
         """
         win_message = self.win_text.format(secret_word)
-        super().__init__(RUSSIAN_GREEN, win_message)
+        super().__init__(RUSSIAN_GREEN, win_message, victory)
 
 
 
