@@ -2,7 +2,7 @@
 #Final exam prep
 from functools import reduce
 from math import sqrt, floor, ceil
-from itertools import count
+from itertools import count, groupby
 """
 question 3: allow the user to enter a number from 1000 to
 9999, create an algorithm that isolates each digit 
@@ -69,22 +69,78 @@ problem 2: find the smallest number divisible by the numbers 1-20
 """
 
 
-def divisors(num):
-    """
-    pre: takes a number
-    post:returns the smallest prime factor
-    """
-    nums = [x for x in range(3, ceil(sqrt(num)), 2) if num % x == 0]
-    return nums 
 
 def is_prime(num):
     """
     pre: takes a number
     post: returns true if num is prime, false otherwise
     """
-    is_even = num % 2 == 0
-    return num == 1 or num == 2 or (not is_even and not divisors(num))
+    return num == 1 or len(prime_factors(num)) == 1
 
+
+def prime_factors(num):
+    """
+    pre: takes a number
+    post: returns the prime factors of the number
+    """
+    factors = []
+    while num != 1:
+        factor = next(x for x in primes() if x <= num and num % x == 0)
+        if factor:
+            factors.append(factor)
+            num //= factor
+        else:
+            num = 1
+
+    return factors        
+
+
+# lcm(12, 30)
+
+# 12 => {3: 1, 2: 2} => (3, 1) (2, 2)
+# 30 => {3: 1, 2: 1, 5: 1} (3, 1), (2, 1) (5, 1)
+
+# group-by first, then sort by second decreasing
+
+# 3: [(3, 1), (3, 1)]
+# 2: [(2, 2) (2, 1)]
+# 5: [(5, 1)]
+
+# 3 * 1 * 2 * 2 * 5 * 1 = lcm
+
+def frequencies(elements):
+    """
+    pre: takes a collection of elements
+    post: returns the number of times the each specific element appears in the collection as a dictionary
+    """
+    result = {}
+    for elem in elements:
+        freq = result.get(elem, 0)
+        result[elem] = freq + 1
+
+    return result
+
+
+
+def lcm(*nums):
+    """
+    pre: takes a list of nums
+    post: returns the lowest common multiple of those numbers
+    """
+    factors = []
+    for n in nums:
+        factors += list(frequencies(prime_factors(n)).items())
+
+    fst = lambda x: x[0]
+    grouped = groupby(sorted(factors, key=fst), fst)
+
+    snd = lambda x: x[1]
+    total = 1
+    for _, pairs in grouped:
+        x, y = max(pairs, key=snd)
+        total *= x ** y
+
+    return total
 
 def find_next_prime(primes_so_far):
     """
@@ -100,7 +156,6 @@ def primes():
     pre: (None)
     post: returns a lazy sequence of prime numbers
     """
-    yield 1
     yield 2
     yield 3
     primes_so_far= [3]
